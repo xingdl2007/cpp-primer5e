@@ -1,5 +1,5 @@
 # Summary
-* [Chapter 1 Getting Start](chapter-1-getting-start.md)
+* [Chapter 1 Getting Started](chapter-1-getting-started.md)
 * [Chapter 2 Variables and Basic Types](chapter-2-variables-and-basic-types.md)
 * [Chapter 3 Strings, Vectors, and Arrays](chapter-3-strings-vectors-and-arrays.md)
 * [Chapter 4 Expressions](chapter-4-expressions.md)
