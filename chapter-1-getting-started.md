@@ -271,26 +271,27 @@ int main() {
 
 ```c++
 #include <iostream>
+#include "Sales_item.h"
 
 int main() {
     // currVal is the number we're counting; we'll read new values into val
-    int currVal = 0, val = 0;
+    Sales_item currVal, val;
 
     // read first number and ensure that we have data to process
     if (std::cin >> currVal) {
         int cnt = 1;  // store the count for the current value we're processing
         while (std::cin >> val) { // read the remaining numbers
-            if (val == currVal)   // if the values are the same
+            if (val.isbn() == currVal.isbn())   // if the values are the same
                 ++cnt;            // add 1 to cnt
             else { // otherwise, print the count for the previous value
-                std::cout << currVal << " occurs "
+                std::cout << currVal.isbn() << " occurs "
                           << cnt << " times" << std::endl;
                 currVal = val;    // remember the new value
                 cnt = 1;          // reset the counter
             }
         }// while loop ends here
         // remember to print the count for the last value in the file
-        std::cout << currVal << " occurs "
+        std::cout << currVal.isbn() << " occurs "
                   << cnt << " times" << std::endl;
     }// outermost if statement ends here
     return 0;
@@ -300,7 +301,7 @@ int main() {
 **Exercise 1.24:** Test the previous program by giving multiple transactions representing multiple ISBNs. The records for each ISBN should be grouped together.
 
 ```c++
-1.6小节中的示例程序就是题目1.23的答案
+1.6小节中的示例程序的思路就是题目1.23的答案
 ```
 
 **Exercise 1.25:** Using the Sales_item.h header from the Web site, compile and execute the bookstore program presented in this section.
