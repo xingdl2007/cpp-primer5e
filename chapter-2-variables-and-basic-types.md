@@ -246,9 +246,9 @@ std::cout << *p << std::endl;
 
 **Exercise 2.19:** Explain the key differences between pointers and references.
 
-```
-指针是对象，可以需改支持其值，也就是指向了另外的对象。
-引用是别名不是对象，仅在初始化时绑定到某对象，在其生命周期中不能修改而绑定到另外的对象。
+```c++
+// 指针是对象，可以修改其值，也就是指向了另外的对象。
+// 引用是别名不是对象，仅在初始化时绑定到某对象，在其生命周期中不能修改而绑定到另外的对象。
 ```
 
 **Exercise 2.20:** What does the following program do?
