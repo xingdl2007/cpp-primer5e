@@ -1,4 +1,4 @@
-project(CHAPTER1 CXX)
+project(CHAPTER2 CXX)
 
 # set variables
 set(CXX_FLAGS -g -Wall -march=native -rdynamic -std=c++11)
