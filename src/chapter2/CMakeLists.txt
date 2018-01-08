@@ -1,8 +1,5 @@
 project(CHAPTER2 CXX)
 
-# set variables
-set(CXX_FLAGS -g -Wall -march=native -rdynamic -std=c++11)
-
 # add sub
 add_subdirectory(unsigned)
 add_subdirectory(literals)
