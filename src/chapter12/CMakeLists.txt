@@ -1,0 +1,12 @@
+project(CHAPTER12 CXX)
+
+add_subdirectory(strblob)
+add_subdirectory(exer)
+add_subdirectory(foo)
+add_subdirectory(conn)
+add_subdirectory(unique)
+add_subdirectory(unique2)
+add_subdirectory(unique3)
+add_subdirectory(weak)
+add_subdirectory(alloc)
+add_subdirectory(alloc2)
