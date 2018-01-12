@@ -1,0 +1,11 @@
+project(CHAPTER8 CXX)
+
+add_subdirectory(clearIO)
+add_subdirectory(buf)
+add_subdirectory(fileIO)
+add_subdirectory(fileIO2)
+add_subdirectory(fileIO3)
+add_subdirectory(additemv2)
+add_subdirectory(sstream)
+add_subdirectory(sstream2)
+add_subdirectory(sstream3)
