@@ -1,0 +1,13 @@
+project(CHAPTER9 CXX)
+
+add_subdirectory(capacity)
+add_subdirectory(erase1)
+add_subdirectory(erase2)
+add_subdirectory(string1)
+add_subdirectory(string2)
+add_subdirectory(string3)
+add_subdirectory(string4)
+add_subdirectory(string5)
+add_subdirectory(iter)
+add_subdirectory(stack)
+add_subdirectory(misc)
