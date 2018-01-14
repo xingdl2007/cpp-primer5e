@@ -1,0 +1,13 @@
+project(CHAPTER11 CXX)
+
+add_subdirectory(word)
+add_subdirectory(filter)
+add_subdirectory(multimap)
+add_subdirectory(pair)
+add_subdirectory(map)
+add_subdirectory(misc)
+add_subdirectory(set)
+add_subdirectory(erase)
+add_subdirectory(transform)
+add_subdirectory(unorder)
+add_subdirectory(hash)
