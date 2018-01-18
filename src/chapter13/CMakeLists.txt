@@ -1,0 +1,10 @@
+project(CHAPTER13 CXX)
+
+add_subdirectory(copyctor)
+add_subdirectory(strblob)
+add_subdirectory(hasptr)
+add_subdirectory(hasptr2)
+add_subdirectory(mail)
+add_subdirectory(strVec)
+add_subdirectory(text)
+add_subdirectory(string)
