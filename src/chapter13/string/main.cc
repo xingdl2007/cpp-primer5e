@@ -27,6 +27,42 @@
  * 	Fax: (201) 236-3290
 */
 
+#include <iostream>
+#include <algorithm>
+#include <vector>
+
+#include "string.h"
+
+void print(const String &s) {
+    std::for_each(s.begin(), s.end(),
+                  [](const char c) { std::cout << c; });
+    std::cout << '\n';
+}
+
 int main() {
+    std::string str = "hello";
+    std::cout << str.size() << " " << str.max_size() << std::endl;
+
+    String s1 = "hello", s2 = "world", s3 = s1;
+
+    s1 = s2;
+    print(s1);
+    print(s2);
+    print(s3);
+
+    s1 += s2;
+    s1 += s3;
+    print(s1);
+    std::cout << s1.size() << " " << s1.capacity() << std::endl;
+
+    std::cout << std::endl;
+    std::vector<String> vec = {"1", "2", "3", "4"};
+    std::cout << std::endl;
+    vec.push_back("4");
+    vec.push_back("6");
+    vec.push_back("7");
+    vec.push_back("8");
+    std::for_each(vec.begin(), vec.end(),
+                  [](const String &s) { print(s); });
     return 0;
 }

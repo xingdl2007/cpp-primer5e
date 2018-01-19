@@ -33,6 +33,14 @@
 
 #include "copyctrl.h"
 
+int f(int a) {
+    return a;
+}
+
+int f(int &a) {
+    return a;
+}
+
 int main() {
     HasPtr h("hello", 0), w("world", 1), p = h;
     p = w;
@@ -40,5 +48,6 @@ int main() {
     std::cout << std::endl;
     std::vector<HasPtr> vec = {w, h};
     std::sort(vec.begin(), vec.end());
+
     return 0;
 }

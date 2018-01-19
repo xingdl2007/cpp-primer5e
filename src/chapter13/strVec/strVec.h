@@ -40,13 +40,19 @@ public:
 
     StrVec(const StrVec &);
 
+    StrVec(StrVec &&) noexcept;
+
     StrVec &operator=(const StrVec &);
+
+    StrVec &operator=(StrVec &&);
 
     StrVec(const std::initializer_list<std::string> &li);
 
     ~StrVec();
 
     void push_back(const std::string &);
+
+    void push_back(std::string &&);
 
     void resize(std::size_t);
 

@@ -27,7 +27,51 @@
  * 	Fax: (201) 236-3290
 */
 
-#ifndef _STRING_H_
-#define _STRING_H_
+#ifndef _MY_STRING_H_
+#define _MY_STRING_H_
+
+#include <memory>
+#include <utility>
+
+class String {
+public:
+    String() : element(nullptr), first_free(nullptr), cap(nullptr) {}
+
+    String(const char *);
+
+    String(const String &s);
+
+    String(String &&) noexcept;
+
+    String &operator=(const String &rhs);
+
+    String &operator=(String &&);
+
+    String &operator+=(const String &s);
+
+    ~String() { free(); }
+
+    std::size_t size() const { return first_free - element; }
+
+    std::size_t capacity() const { return cap - element; }
+
+    char *begin() const { return element; }
+
+    char *end() const { return first_free; }
+
+private:
+    static std::allocator<char> alloc;
+    char *element;
+    char *first_free;
+    char *cap;
+
+    void reallocate();
+
+    void free();
+
+    void check() { if (size() == capacity()) reallocate(); }
+
+    std::pair<char *, char *> copy(const char *, const char *);
+};
 
 #endif

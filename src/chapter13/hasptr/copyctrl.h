@@ -44,8 +44,13 @@ public:
     HasPtr(const HasPtr &p) :
             ps(new std::string(*p.ps)), i(p.i) {}
 
+    // move ctor
+    HasPtr(HasPtr &&p) noexcept : ps(p.ps), i(p.i) { p.ps = nullptr; }
+
     // copy-assignment operator
-    HasPtr &operator=(HasPtr p);
+    HasPtr &operator=(const HasPtr &p);
+
+    HasPtr &operator=(HasPtr &&p);
 
     bool operator<(const HasPtr &p) { return i < p.i; }
 
@@ -67,7 +72,13 @@ inline void swap(HasPtr &lhs, HasPtr &rhs) {
 }
 
 // seems better version for value-semantic HasPtr
-HasPtr &HasPtr::operator=(HasPtr p) {
+HasPtr &HasPtr::operator=(const HasPtr &p) {
+    ps = new std::string(*p.ps);
+    i = p.i;
+    return *this;
+}
+
+HasPtr &HasPtr::operator=(HasPtr &&p) {
     swap(*this, p);
     return *this;
 }

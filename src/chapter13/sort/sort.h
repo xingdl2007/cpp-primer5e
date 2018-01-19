@@ -27,63 +27,19 @@
  * 	Fax: (201) 236-3290
 */
 
-#ifndef _MESSAGE_H_
-#define _MESSAGE_H_
+#ifndef _SORT_H_
+#define _SORT_H_
 
-#include <string>
-#include <set>
-#include "folder.h"
+#include <vector>
 
-class Message {
-    friend class Folder;
-
-    friend void swap(Message &, Message &);
-
+class Foo {
 public:
-    explicit Message(const std::string &s = "") : contents(s) {}
+    Foo sorted() &&;
 
-    // copy ctor
-    Message(const Message &);
-
-    // move ctor
-    Message(Message &&);
-
-    // copy-assignment operator
-    Message &operator=(const Message &);
-
-    // move-assignment operator
-    Message &operator=(Message &&);
-
-    // dtor
-    ~Message();
-
-    void save(Folder &);
-
-    void remove(Folder &);
-
-    void addFolder(Folder *);
-
-    void rmFolder(Folder *);
+    Foo sorted() const &;
 
 private:
-    std::string contents;
-    std::set<Folder *> folders;
-
-    void add_to_folders(const Message &);
-
-    void remove_from_folders();
-
-    void move_folers(Message *);
+    std::vector<int> data;
 };
-
-inline void Message::addFolder(Folder *f) {
-    folders.insert(f);
-}
-
-inline void Message::rmFolder(Folder *f) {
-    folders.erase(f);
-}
-
-void swap(Message &, Message &);
 
 #endif

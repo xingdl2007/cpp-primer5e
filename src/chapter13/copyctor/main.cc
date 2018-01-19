@@ -82,6 +82,8 @@ void num2() {
     f2(c);
 }
 
+int f() { return 0; }
+
 int main() {
     FOO f1;
     FOO f2 = f1;
@@ -98,5 +100,15 @@ int main() {
     std::cout << std::endl;
     //num();
     num2();
+
+    // 13.46
+    std::vector<int> vi(100);
+    int &&r1 = f();
+    int &r2 = vi[0];
+    int &r3 = r1;
+    int &&r4 = vi[0] * f();
+
+    std::cout << r1 << " " << r2 << " " << r3 << " " << r4 << std::endl;
+
     return 0;
 }

@@ -548,10 +548,98 @@ std::for_each(element, first_free,
 **Exercise 13.44:** Write a class named String that is a simplified version of the library string class. Your class should have at least a default constructor and a constructor that takes a pointer to a C-style string. Use an allocator to allocate memory that your String class uses.
 
 ```c++
-// good exercise
+#ifndef _MY_STRING_H_
+#define _MY_STRING_H_
+
+#include <memory>
+#include <utility>
+class String {
+public:
+    String() : element(nullptr), first_free(nullptr), cap(nullptr) {}
+    String(const char *);
+    String(const String &s);
+    String &operator=(const String &s);
+    String &operator+=(const String &s);
+ 
+    ~String() { free(); }
+    std::size_t size() const { return first_free - element; }
+	std::size_t capacity() const { return cap - element; }
+    char *begin() const { return element; }
+    char *end() const { return first_free; }
+private:
+    static std::allocator<char> alloc;
+    char *element;
+    char *first_free;
+    char *cap;
+    void reallocate();
+    void free();
+    void check() { if (size() == capacity()) reallocate(); }
+    std::pair<char *, char *> copy(const char *, const char *);
+};
+#endif
+
+#include "string.h"
+#include <cstring>
+std::allocator<char> String::alloc;
+// double strategy
+void String::reallocate() {
+    auto old_size = size();
+    auto new_size = old_size ? 2 * old_size : 1;
+    auto new_data = alloc.allocate(new_size);
+    std::uninitialized_copy(element, first_free, new_data);
+    free();
+    element = new_data;
+    first_free = element + old_size;
+    cap = element + new_size;
+}
+std::pair<char *, char *> String::copy(const char *b, const char *e) {
+    auto start = alloc.allocate(e - b);
+    return {start, std::uninitialized_copy(b, e, start)};
+}
+void String::free() {
+    if (element) {
+        for (auto p = first_free; p != element;) {
+            alloc.destroy(--p);
+        }
+        alloc.deallocate(element, capacity());
+    }
+}
+String::String(const char *literal) {
+    auto pair = copy(literal, literal + std::strlen(literal));
+    element = pair.first;
+    first_free = cap = pair.second;
+}
+String::String(const String &s) {
+    auto pair = copy(s.begin(), s.end());
+    element = pair.first;
+    first_free = cap = pair.second;
+}
+String &String::operator=(const String &s) {
+    if (this != &s) {
+        free();
+        auto pair = copy(s.begin(), s.end());
+        element = pair.first;
+        first_free = cap = pair.second;
+    }
+    return *this;
+}
+String &String::operator+=(const String &s) {
+    while (size() + s.size() > capacity()) {
+        reallocate();
+    }
+    std::uninitialized_copy(s.begin(), s.end(), first_free);
+    first_free += s.size();
+    return *this;
+}
 ```
 
 **Exercise 13.45:** Distinguish between an rvalue reference and an lvalue reference.
+
+```c++
+// 左值持久，右值短暂
+// 左值引用使用的是对象的位置
+// 右值引用使用的是对象的值，右值引用只能绑定要临时对象，所引用的对象将要被销毁，该对象没有其他用户。这两个特性意味着，使用右值的代码客可以自由的接管所引用的对象的资源。
+```
 
 **Exercise 13.46:** Which kind of reference can be bound to the following initializers?
 
@@ -562,36 +650,75 @@ int? r1 = f();
 int? r2 = vi[0];
 int? r3 = r1;
 int? r4 = vi[0] * f();
+
+---
+int &&r1 = f();
+int &r2 = vi[0];
+int &r3 = r1; (int &&r3 is wrong!)
+int &&r4 = vi[0]*f();
 ```
 
 **Exercise 13.47:** Give the copy constructor and copy-assignment operator in yourString class from exercise 13.44 in § 13.5 (p. 531) a statement that prints a messageeach time the function is executed.
 
 **Exercise 13.48:** Define a `vector<String>` and call push_back several times on thatvector. Run your program and see how often Strings are copied.	Exercise 13.49: Add a move constructor and move-assignment operator to yourStrVec, String, and Message classes.
 
-**Exercise 13.50:** Put print statements in the move operations in your String class andrerun the program from exercise 13.48 in § 13.6.1 (p. 534) that used a vector<String>to see when the copies are avoided.
+**Exercise 13.50:** Put print statements in the move operations in your String class andrerun the program from exercise 13.48 in § 13.6.1 (p. 534) that used a `vector<String>`to see when the copies are avoided.
 
-**Exercise 13.51:** Although unique_ptrs cannot be copied, in § 12.1.5 (p. 471) wewrote a clone function that returned a unique_ptr by value. Explain why that func-tion is legal and how it works.
+```c++
+// push_back()会使用移动构造，而且使用了两次，推测为传参一次，构造容器元素一次，可以发现vector没有使用移动/拷贝赋值操作，而是移动/拷贝构造函数，应该是编译器的优化措施。所以说参数传递会赋值的，只是概念上理解，实际很可能用的是构造函数。
 
-**Exercise 13.52:** Explain in detail what happens in the assignments of the HasPtr ob-jects on page 541. In particular, describe step by step what happens to values of hp,hp2, and of the rhs parameter in the HasPtr assignment operator.
+// 使用{}值初始化列表初始化时，没有使用移动构造，使用的是拷贝构造
+```
+
+**Exercise 13.51:** Although unique_ptrs cannot be copied, in § 12.1.5 (p. 471) wewrote a clone function that returned a unique_ptr by value. Explain why that function is legal and how it works.
+
+```c++
+unique_ptr<int> clone(int p) {
+  return unique_ptr<int>(new int(p));
+}
+
+// 返回值是一个右值，如果unique_ptr定义了移动赋值操作符，则会匹配上，将其状态转移到目的unique_ptr。
+```
+
+**Exercise 13.52:** Explain in detail what happens in the assignments of the HasPtr objects on page 541. In particular, describe step by step what happens to values of hp,hp2, and of the rhs parameter in the HasPtr assignment operator.
+
+```c++
+// 作者讲解的很清楚了; 赋值时，根据参数类型，拷贝/移动参数到rhs，在赋值运算符函数体中，进行swap。
+```
 
 **Exercise 13.53:** As a matter of low-level efficiency, the HasPtr assignment operatoris not ideal. Explain why. Implement a copy-assignment and move-assignment oper-ator for HasPtr and compare the operations executed in your new move-assignmentoperator versus the copy-and-swap version.
 
+```c++
+// 因为拷贝赋值，多进行了一次额外的移动操作。
+// 对于移动赋值，多进行了一次额外的拷贝操作。
+```
+
 **Exercise 13.54:** What would happen if we defined a HasPtr move-assignment oper-ator but did not change the copy-and-swap operator? Write code to test your answer.
+
+```c++
+// error: ambiguous overload for 'operator='
+// 编译器无法区分使用哪个版本
+```
 
 **Exercise 13.55:** Add an rvalue reference version of push_back to your StrBlob.
 
 **Exercise 13.56:** What would happen if we defined sorted as:
 
 ```c++
-Foo Foo::sorted() const & { Foo ret(*this);
+Foo Foo::sorted() const & { 
+  	Foo ret(*this);
 	return ret.sorted();
 }
+---
+// infinit loop
 ```
 
 **Exercise 13.57:** What if we defined sorted as:
 
 ```c++
 Foo Foo::sorted() const & { return Foo(*this).sorted(); }
+---
+// right
 ```
 
 **Exercise 13.58:** Write versions of class Foo with print statements in their sorted functions to test your answers to the previous two exercises.
@@ -663,3 +790,15 @@ Foo Foo::sorted() const & { return Foo(*this).sorted(); }
 
 
 - <u>swap函数应该调用swap，而不是std::swap</u>。<u>每个swap调用都应该是未加限定的，如果存在特定类型的swap版本，其匹配程度会优于std中定义的版本</u>。因此如果存在特定类型的swap版本，swap调用会与之匹配。如果不存在类型特定的版本，则会使用std的版本。
+
+
+-  标准库容器、string和shared_ptr类既支持移动也支持拷贝。IO类和unique_ptr类可以移动但不能拷贝。
+- 编译器合成移动操作的条件与合成拷贝操作的条件大不相同。<u>如果一个类定义了自己的拷贝构造函数、拷贝赋值运算符或者析构函数，编译器就不会为它合成移动构造函数和移动赋值运算符了</u>。如果一个类没有移动操作，通过正常的函数匹配，类会使用对应的拷贝操作来代替移动操作。
+- <u>只有当一个类没有定义任何自己版本的拷贝控制成员，且它的所有数据成员都能移动构造或移动赋值时，编译器才会为它合成移动构造和移动赋值运算符</u>。（这个条件相当的严格，所以几乎都需要类设计者显式的定义。）
+- 定义了一个移动构造函数或移动赋值运算符的类必须也定义自己的拷贝操作。否则，这些成员默认被定义为删除的。
+- 如果一个类既有移动构造函数，也有拷贝构造函数，编译器使用普通的函数匹配规则来确定使用哪个构造函数。赋值操作的情况类似。
+- **右值引用Foo &&可以转换为const左值引用——const Foo&**，用于函数匹配。用拷贝构造函数替代移动构造函数几乎肯定是安全的（赋值运算符的情况类似），一般情况下，拷贝构造函数满足对应的移动构造函数的要求：它会拷贝给定对象，并将原对象置于有效状态。实际上，拷贝构造函数甚至都不会改变原对象的值。
+
+
+- 所有5个拷贝控制成员应该看作一个整体：一般来说，如果一个类定义了任何一个拷贝操作，它就应该定义所有5个操作。某些类必须定义拷贝构造、拷贝赋值和析构才能正常工作。这些类通常拥有一个资源，而拷贝成员必须拷贝此资源。一般来说，拷贝一个资源会导致一些额外开销。<u>在这种拷贝并非必要的情况下，定义了移动构造函数和移动赋值运算符的类就可以避免此问题</u>。（可以看做一个优化措施，消除不必要的拷贝）
+-  在移动构造函数和移动赋值运算符这些类首先代码之外的地方，只有确信需要进行移动操作且移动操作时安全的，才可以使用std::move。
