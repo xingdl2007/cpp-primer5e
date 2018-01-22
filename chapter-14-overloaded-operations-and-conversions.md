@@ -148,10 +148,6 @@ istream& operator>>(istream& in, Sales_data& s) {
 
 **Exercise 14.15:** Should the class you chose for exercise 7.40 from § 7.5.1 (p. 291) defineany of the arithmetic operators? If so, implement them. If not, explain why not.
 
-```c++
-
-```
-
 **Exercise 14.16:** Define equality and inequality operators for your StrBlob (§ 12.1.1,p. 456), StrBlobPtr (§ 12.1.6, p. 474), StrVec (§ 13.5, p. 526), and String (§ 13.5,p. 531) classes.
 
 **Exercise 14.17:** Should the class you chose for exercise 7.40 from § 7.5.1 (p. 291) definethe equality operators? If so, implement them. If not, explain why not.
@@ -192,31 +188,91 @@ Sales_data &Sales_data::operator=(const std::string &s) {
 
 **Exercise 14.28:** Define addition and subtraction for StrBlobPtr so that these operators implement pointer arithmetic (§ 3.5.3, p. 119).
 
+```c++
+// arithmetic
+inline StrBlobPtr operator+(const StrBlobPtr &lhs, std::size_t n) {
+    StrBlobPtr ret = lhs;
+    ret.curr += n;
+    return ret;
+}
+
+inline StrBlobPtr operator-(const StrBlobPtr &lhs, std::size_t n) {
+    StrBlobPtr ret = lhs;
+    ret.curr -= n;
+    return ret;
+}
+
+inline StrBlobPtr operator+(std::size_t n, const StrBlobPtr &rhs) {
+    return operator+(rhs, n);
+}
+
+inline std::ptrdiff_t operator-(const StrBlobPtr &lhs, const StrBlobPtr &rhs) {
+    return static_cast<std::ptrdiff_t >(lhs.curr) - static_cast<std::ptrdiff_t >(rhs.curr);
+}
+```
+
 **Exercise 14.29:** We did not define a const version of the increment and decrement operators. Why not?
+
+```c++
+// 递增递减运算符本身就是修改对象状态的运算符，和const语义违背，当然不能定义const版本
+```
 
 **Exercise 14.30:** Add dereference and arrow operators to your StrBlobPtr class andto the ConstStrBlobPtr class that you defined in exercise 12.22 from § 12.1.6 (p. 476).Note that the operators in constStrBlobPtr must return const references becausethe data member in constStrBlobPtr points to a const vector.
 
 **Exercise 14.31:** Our StrBlobPtr class does not define the copy constructor, assign-ment operator, or a destructor. Why is that okay?
 
+```c++
+// StrBlobPtr含有两个数据成员，值语义，编译器合成的版本工作的很好，没有特殊需求无需自定义了
+```
+
 **Exercise 14.32:** Define a class that holds a pointer to a StrBlobPtr. Define the over-loaded arrow operator for that class.
+
+```c++
+class StrBlobPtrPtr {
+public:
+    StrBlobPtrPtr(StrBlobPtr *p) : ptr(p) {}
+    StrBlobPtr &operator*() { return *ptr; }
+    StrBlobPtr operator->() { return *ptr; }
+private:
+    StrBlobPtr *ptr;
+};
+```
 
 **Exercise 14.33:** How many operands may an overloaded function-call operator take?
 
-**Exercise 14.34:** Define a function-object class to perform an if-then-else operation: Thecall operator for this class should take three parameters. It should test its first parame-ter and if that test succeeds, it should return its second parameter; otherwise, it shouldreturn its third parameter.
+```c++
+// 可以有默认参数。同普通函数调用一致，定义有多少个参数，使用时就需要传几个参数
+```
 
-**Exercise 14.35:** Write a class like PrintString that reads a line of input from anistream and returns a string representing what was read. If the read fails, returnthe empty string.
+**Exercise 14.34:** Define a function-object class to perform an if-then-else operation: The call operator for this class should take three parameters. It should test its first parameter and if that test succeeds, it should return its second parameter; otherwise, it should return its third parameter.
+
+```c++
+class Demo {
+public:
+    int operator()(int a, int b, int c) {
+        return a ? b : c;
+    }
+};
+```
+
+**Exercise 14.35:** Write a class like PrintString that reads a line of input from anistream and returns a string representing what was read. If the read fails, return the empty string.
 
 **Exercise 14.36:** Use the class from the previous exercise to read the standard input,storing each line as an element in a vector.
 
 **Exercise 14.37:** Write a class that tests whether two values are equal. Use that objectand the library algorithms to write a program to replace all instances of a given valuein a sequence.
 
-**Exercise 14.38:** Write a class that tests whether the length of a given string matchesa given bound. Use that object to write a program to report how many words in aninput file are of sizes 1 through 10 inclusive.
+**Exercise 14.38:** Write a class that tests whether the length of a given string matches a given bound. Use that object to write a program to report how many words in an input file are of sizes 1 through 10 inclusive.
 
 **Exercise 14.39:** Revise the previous program to report the count of words that are sizes1 through 9 and 10 or more.
 
 **Exercise 14.40:** Rewrite the biggies function from § 10.3.2 (p. 391) to use function-object classes in place of lambdas.
 
-**Exercise 14.41:** Why do you suppose the new standard added lambdas? Explainwhen you would use a lambda and when you would write a class instead.
+**Exercise 14.41:** Why do you suppose the new standard added lambdas? Explain when you would use a lambda and when you would write a class instead.
+
+```c++
+// 为了支持函数式编程范式
+// 替代一次性的功能函数时；如果频繁使用，则应该使用类，避免重复写类似的lambda。
+```
 
 **Exercise 14.42:** Using library function objects and adaptors, define an expression to
 
@@ -224,11 +280,34 @@ Sales_data &Sales_data::operator=(const std::string &s) {
 (a) Count the number of values that are greater than 1024 
 (b) Find the first string that is not equal to pooh
 (c) Multiply all values by 2
+  
+---
+(a) count_if(ivec.begin(), ivec.end(), bind(greater<int>(), _1, 1024));
+(b) auto ret = find_if(svec.begin(), svec.end(), bind(equal_to<int>(), _1, "pooh"));
+(c) transform(ivec.begin(), ivec.end(), ivec.begin(), bind(multiplies<int>(), _1, 2));
 ```
 
 **Exercise 14.43:** Using library function objects, determine whether a given int value is divisible by any element in a container of ints.
 
+```c++
+all_of(ivec.begin(), ivec.end(), bind(equal_to<int>(), bind(modulus<int>(), _1, 2), 0));
+```
+
 **Exercise 14.44:** Write your own version of a simple desk calculator that can handle binary operations.
+
+```c++
+int add(int a, int b) { return a + b; }
+map<string, function<int(int, int)>> binops = {
+        {"+", add},
+        {"-", std::minus<int>()},
+        {"*", [](int a, int b) { return a * b; }},
+        {"/", std::divides<int>()},
+};
+cout << binops["+"](10, 5) << endl;
+cout << binops["-"](10, 5) << endl;
+cout << binops["*"](10, 5) << endl;
+cout << binops["/"](10, 5) << endl;
+```
 
 
 **Exercise 14.45:** Write conversion operators to convert a Sales_data to string andto double. What values do you think these operators should return?
@@ -333,4 +412,39 @@ double d = s1 + 3.14;
 
 
 - <u>如果一个类包含下标运算符，则它通常会定义两个版本：一个返回普通引用，另一个是类的常量成员并返回常量引用</u>。
+
+
+- <u>箭头运算符永远不能丢掉成员访问这个最基本的含义。当重载箭头时，可以改变的是箭头从哪个对象中获取成员，而箭头获取成员这一事实则永远不变</u>。
+
+  - 对于point->mem的表达式，point必须是指向类对象的指针或者是一个重载了operator->的类的对象。根据point类型的不同，point->mem分别等价于已下两种情况。其执行过程如下：
+
+    ```c++
+    (*point).mem；  				 // point 是一个内置的指针类型
+    point.operator->()->mem;      // Point 是类的一个对象
+    ```
+
+
+  - 如果point是指针类型，则应用内置的箭头运算符，表达式等价于1。首先解引用该指针，然后从所得的对象中获取指定的成员。
+  - 如果point是定义了operator->的类的一个对象，则使用point.operator->()的结果来获取mem。其中，如果该结果是一个指针，则执行上一步；如果该结果本身含有重载的operator->，则重复当前步骤。最终，当这一过程结束的时候，程序或者返回了所需的内容，或者产生了错误信息。（*原来如此，可以嵌套迭代*）
+
+
+- 重载的箭头运算符必须返回类的指针或者自定义了箭头运算符的某个类的对象。
+
+
+- 如果类定义了调用运算符，则该类的对象称为<u>函数对象（function object）</u>。因为可以调用这种对象，所以说这些对象的“行为像函数一样”。
+
+
+- <u>*编写lambda后，编译器将该表达式翻译成一个未命名类的未命名对象*</u>。
+
+- 当一个lambda表达式通过**引用**捕获变量时，将由程序员负责确保lambda执行时所引用的对象确实存在。因此，编译器可以直接使用该引用而无须在lambda产生的类中将其存储为数据成员。相反，通过值捕获的变量被拷贝到lambda中。因此，这种lambda产生的类必须为每个值捕获的变量建立对应的数据成员，同时创造构造函数。
+
+- ```c++
+  Classes generated from a lambda expression have a deleted default constructor, deleted assignment operators, and a default destructor. Whether the class has a defaulted or deleted copy/move constructor depends in the usual ways on the types of the captured data members。
+
+  // 这里应该指的是"具有值捕获的lambda": Classes Representing Lambdas with Captures
+  ```
+
+
+- C++语言中有几种可调用的对象：<u>函数、函数指针、lambda表达式、bind创建的对象以及重载了函数调用运算符的类</u>。
+- 调用形式（call signature）：不同类型的可调用对象可能共享同一种调用形式。调用形式指明了调用返回的类型以及传递给调用的实参类型。<u>一种调用类型对应一个函数类型</u>。（应该可理解为函数原型）
 

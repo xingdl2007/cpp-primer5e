@@ -50,15 +50,15 @@ int main() {
     }
 
     cout << b1.size() << endl;
-    for (auto it = b1.begin(); it != b1.end(); it.incr()) {
-        cout << it.deref() << endl;
-        it.deref() += "-";
+    for (auto it = b1.begin(); it != b1.end(); ++it) {
+        cout << *it << endl;
+        *it += "-";
     }
 
     StrBlob b3 = b1;
     cout << b3.size() << endl;
-    for (auto it = b3.begin(); it != b3.end(); it.incr()) {
-        cout << it.deref() << endl;
+    for (auto it = b3.begin(); it != b3.end(); ++it) {
+        cout << *it << endl;
     }
 
     // == or !=
@@ -95,5 +95,32 @@ int main() {
     cout << it[0] << endl;
     ++it;
     cout << it[0] << endl;
+
+
+    // arithmetic
+    int array[] = {1, 2, 3, 4};
+    int *p = array;
+    cout << *(2 + p) << endl;
+
+    //
+    cout << endl;
+    b1.push_back("ok");
+    b1.push_back("not");
+    b1.push_back("1");
+    b1.push_back("n");
+    auto bit = b1.begin();
+    auto eit = b1.end();
+    cout << eit - bit << " " << b1.size() << endl;
+    cout << *(bit + 3) << endl;
+    cout << *(1 + bit + 3) << endl;
+    cout << *(eit - 1) << endl;
+    cout << *(-1 + eit) << endl;
+
+    cout << endl;
+    StrBlobPtrPtr ptr(&bit);
+    cout << ptr->size() << endl;
+    cout << ptr->c_str() << endl;
+    cout << *(*ptr) << endl;
+
     return 0;
 }

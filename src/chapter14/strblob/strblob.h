@@ -137,15 +137,25 @@ class StrBlobPtr {
 
     friend bool operator<(const StrBlobPtr &, const StrBlobPtr &);
 
+    friend StrBlobPtr operator+(const StrBlobPtr &, std::size_t);
+
+    friend StrBlobPtr operator-(const StrBlobPtr &, std::size_t);
+
+    friend std::ptrdiff_t operator-(const StrBlobPtr &, const StrBlobPtr &);
+
 public:
     StrBlobPtr() : curr(0) {}
 
     StrBlobPtr(StrBlob &a, size_t sz = 0) : wptr(a.data), curr(sz) {}
 
-    std::string &deref() const;
+    std::string &operator*() const;
 
-    StrBlobPtr &incr();       // prefix version
-    StrBlobPtr &decr();       // prefix version
+    std::string *operator->() const;
+
+    StrBlobPtr &operator++();       // prefix version
+    StrBlobPtr &operator--();       // prefix version
+    StrBlobPtr operator++(int);     // postfix version
+    StrBlobPtr operator--(int);     // postfix version
 
     std::string &operator[](std::size_t);
 
@@ -161,9 +171,13 @@ private:
     std::size_t curr;      // current position within the array
 };
 
-inline std::string &StrBlobPtr::deref() const {
+inline std::string &StrBlobPtr::operator*() const {
     auto p = check(curr, "dereference past end");
     return (*p)[curr];  // (*p) is the vector to which this object points
+}
+
+inline std::string *StrBlobPtr::operator->() const {
+    return &this->operator*();
 }
 
 std::string &StrBlobPtr::operator[](std::size_t n) {
@@ -188,18 +202,30 @@ StrBlobPtr::check(std::size_t i, const std::string &msg) const {
 }
 
 // prefix: return a reference to the incremented object
-inline StrBlobPtr &StrBlobPtr::incr() {
+inline StrBlobPtr &StrBlobPtr::operator++() {
     // if curr already points past the end of the container, can't increment it
     check(curr, "increment past end of StrBlobPtr");
     ++curr;       // advance the current state
     return *this;
 }
 
-inline StrBlobPtr &StrBlobPtr::decr() {
+inline StrBlobPtr StrBlobPtr::operator++(int) {
+    StrBlobPtr ret = *this;
+    ++*this;
+    return ret;
+}
+
+inline StrBlobPtr &StrBlobPtr::operator--() {
     // if curr is zero, decrementing it will yield an invalid subscript
     --curr;       // move the current state back one element}
     check(curr, "decrement past begin of StrBlobPtr");
     return *this;
+}
+
+inline StrBlobPtr StrBlobPtr::operator--(int) {
+    StrBlobPtr ret = *this;
+    --*this;
+    return ret;
 }
 
 // begin and end members for StrBlob
@@ -237,5 +263,40 @@ inline bool operator<(const StrBlobPtr &lhs, const StrBlobPtr &rhs) {
 inline bool operator!=(const StrBlobPtr &lhs, const StrBlobPtr &rhs) {
     return !(lhs == rhs);
 }
+
+// arithmetic
+inline StrBlobPtr operator+(const StrBlobPtr &lhs, std::size_t n) {
+    StrBlobPtr ret = lhs;
+    ret.curr += n;
+    return ret;
+}
+
+inline StrBlobPtr operator-(const StrBlobPtr &lhs, std::size_t n) {
+    StrBlobPtr ret = lhs;
+    ret.curr -= n;
+    return ret;
+}
+
+inline StrBlobPtr operator+(std::size_t n, const StrBlobPtr &rhs) {
+    return operator+(rhs, n);
+}
+
+inline std::ptrdiff_t operator-(const StrBlobPtr &lhs, const StrBlobPtr &rhs) {
+    return static_cast<std::ptrdiff_t >(lhs.curr) - static_cast<std::ptrdiff_t >(rhs.curr);
+}
+
+
+// 14.32
+class StrBlobPtrPtr {
+public:
+    StrBlobPtrPtr(StrBlobPtr *p) : ptr(p) {}
+
+    StrBlobPtr &operator*() { return *ptr; }
+
+    StrBlobPtr operator->() { return *ptr; }
+
+private:
+    StrBlobPtr *ptr;
+};
 
 #endif
