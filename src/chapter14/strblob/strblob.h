@@ -54,12 +54,10 @@ public:
     // constructors
     StrBlob() : data(std::make_shared<DataType>()) {}
 
-    StrBlob(std::initializer_list<std::string>
-            il);
+    StrBlob(std::initializer_list<std::string> il);
 
     // copy ctor
-    StrBlob(
-            const StrBlob &s);
+    StrBlob(const StrBlob &s);
 
     // copy-assignment operator
     StrBlob &operator=(const StrBlob &s);
