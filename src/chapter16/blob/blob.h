@@ -72,6 +72,9 @@ public:
 
     Blob(std::initializer_list<T> il);
 
+    template<typename It>
+    Blob(It b, It e);
+
     // copy ctor
     Blob(const Blob &s);
 
@@ -120,6 +123,10 @@ Blob<T>::Blob(const Blob &s)
     auto *vec = new std::vector<T>(*s.data);
     data.reset(vec);
 }
+
+template<typename T>
+template<typename It>
+Blob<T>::Blob(It b, It e):data(std::make_shared<DataType>(b, e)) {}
 
 // copy-assignment operator
 template<typename T>

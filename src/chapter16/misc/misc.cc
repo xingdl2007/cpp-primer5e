@@ -33,6 +33,7 @@
 #include <cstring>
 #include <list>
 #include <cassert>
+#include <memory>
 
 using namespace std;
 
@@ -152,7 +153,87 @@ namespace exercise {
         is >> screen.height >> screen.width;
         return is;
     };
+
+    // 16.27
+    template<typename T>
+    class Stack {
+    public:
+        Stack() { cout << "Stack()" << endl; }
+
+        void operator()() const { cout << "Stack operator()" << endl; }
+    };
+
+    void f1(Stack<char> s) { s(); }
+
+    class Exercise {
+        //Stack<double> &rsd;
+        Stack<int> si;
+    };
 }
+
+// 16.18
+template<typename T, typename U, typename V>
+void f1(T, U, V);
+
+template<typename T>
+T f2(int &);
+
+template<typename T>
+inline T foo(T, unsigned int *);
+
+template<typename T>
+void f4(T, T);
+
+typedef char Ctype;
+
+template<typename Ctype>
+Ctype f5(Ctype a);
+
+/*
+ _  __    _  ___
+/ |/ /_  / |( _ )
+| | '_ \ | |/ _ \
+| | (_) || | (_) |
+|_|\___(_)_|\___/
+*/
+
+// 16.19
+template<typename T>
+void print(const T &t) {
+    typename T::size_type s = 0, size = t.size();
+    while (s != size) {
+        cout << t[s] << endl;
+        ++s;
+    }
+}
+
+// 16.20
+template<typename T>
+void print2(T &t) {
+    auto it = t.begin();
+    while (it != t.end()) {
+        cout << *it++ << endl;
+    }
+}
+
+
+class DebugDelete {
+public:
+    DebugDelete(std::ostream &s = std::cerr) : os(s) {}
+
+    template<typename T>
+    void operator()(T *p) const {
+        os << "deleting unique_ptr" << std::endl;
+        delete p;
+    }
+
+private:
+    std::ostream &os;
+};
+
+// for 16.27
+template<typename>
+class Test;
 
 int main() {
     cout << compare(1, 2) << endl;                              // -1
@@ -206,5 +287,30 @@ int main() {
 
     exercise::Screen<10, 100> screen2;
     cout << screen2 << endl;
+
+    // 16.19
+    print(ivec);
+    print2(sls);
+
+    // interesting
+    double *p = new double;
+    DebugDelete d;
+    d(p);
+
+    int *ip = new int;
+    DebugDelete()(ip);
+
+    unique_ptr<int, DebugDelete> up(new int, DebugDelete());
+    unique_ptr<string, DebugDelete> sup(new string, DebugDelete());
+
+    // 16.27
+    exercise::Stack<char> *sc;
+    exercise::f1(*sc);
+    int iObj = sizeof(exercise::Stack<string>);
+    cout << "iObj: " << iObj << endl;
+
+
+    // test
+    //Test<string> *tt;
     return 0;
 }

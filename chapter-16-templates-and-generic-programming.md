@@ -175,6 +175,11 @@ istream &operator>>(istream &is, Screen<H, W> screen) {
 
 **Exercise 16.17:** What, if any, are the differences between a type parameter that is de-clared as a typename and one that is declared as a class? When must typename beused?
 
+```c++
+// 没有不同；
+// 在需要使用模板实参中的类型成员时，需要使用typename显式的告知编译器，这是一个类型，这个时候只能使用typename
+```
+
 **Exercise 16.18:** Explain each of the following function template declarations and iden-tify whether any are illegal. Correct each error that you find.
 
 ```c++
@@ -184,13 +189,60 @@ istream &operator>>(istream &is, Screen<H, W> screen) {
 (d) template <typename T> f4(T, T);
 (e) typedef char Ctype;
 	template <typename Ctype> Ctype f5(Ctype a);
+
+---
+(a) template <typename T, typename U, typename V> void f1(T, U, V);
+(b) template <typename T> T f2(int &);
+(c) template <typename T> inline T foo(T, unsigned int*); 
+(d) template <typename T> void f4(T, T);
+(e)	typedef char Ctype;
+	template <typename Ctype> Ctype f5(Ctype a);  // right, but ambiguous for human
 ```
 
-**Exercise 16.19:** Write a function that takes a reference to a container and prints theelements in that container. Use the container’s size_type and size members tocontrol the loop that prints the elements.
+**Exercise 16.19:** Write a function that takes a reference to a container and prints the elements in that container. Use the container’s size_type and size members to control the loop that prints the elements.
+
+```c++
+template<typename T>
+void print(const T &t) {
+    typename T::size_type s = 0, size = t.size();
+    while (s != size) {
+        cout << t[s] << endl;
+        ++s;
+    }
+}
+// 实现依赖下标操作
+```
 
 **Exercise 16.20:** Rewrite the function from the previous exercise to use iterators re-turned from begin and end to control the loop.
 
+```c++
+template<typename T>
+void print2(T &t) {
+    auto it = t.begin();
+    while (it != t.end()) {
+        cout << *it++ << endl;
+    }
+}
+// 仅使用迭代器接口
+```
+
 **Exercise 16.21:** Write your own version of DebugDelete.
+
+```c++
+class DebugDelete {
+public:
+    DebugDelete(std::ostream &s = std::cerr) : os(s) {}
+
+    template<typename T>
+    void operator()(T *p) const {
+        os << "deleting unique_ptr" << std::endl;
+        delete p;
+    }
+
+private:
+    std::ostream &os;
+};
+```
 
 **Exercise 16.22:** Revise your TextQuery programs from § 12.3 (p. 484) so that the shared_ptr members use a DebugDelete as their deleter (§ 12.1.4, p. 468).
 
@@ -198,35 +250,52 @@ istream &operator>>(istream &is, Screen<H, W> screen) {
 
 **Exercise 16.24:** Add a constructor that takes two iterators to your Blob template.
 
+```c++
+template<typename T>
+template<typename It>
+Blob<T>::Blob(It b, It e):data(std::make_shared<DataType>(b, e)) {}
+```
+
 **Exercise 16.25:** Explain the meaning of these declarations:
 
 ```c++
 extern template class vector<string>;
 template class vector<Sales_data>;
+
+---
+(1) 实例化声明vector<string>，保证定义在其他文件中出现
+(2) 实例化定义
 ```
 
-
 **Exercise 16.26:** Assuming NoDefault is a class that does not have a default constructor, can we explicitly instantiate `vector<NoDefault>`? If not, why not?
+
+```c++
+// 不能；因为显式实例化会实例化类的所有成员；而vector中包含有成员函数要求模板参数定义了默认构造函数，而NoDefault没有定义，导致实例化失败
+```
 
 **Exercise 16.27:** For each labeled statement explain what, if any, instantiations happen. If a template is instantiated, explain why; if not, explain why not.
 
 ```c++
 template <typename T> class Stack { };
-void f1(Stack<char>);     				// (a)
+void f1(Stack<char>);     				// (a) 出现在函数声明中，不会实例化
 class Exercise {
-    Stack<double> &rsd;    				// (b)
-    Stack<int>    si; 					// (c)
+    Stack<double> &rsd;    				// (b) 出现在类定义中，由于是引用不会实例化
+    Stack<int>    si; 					// (c) 出现在类定义中，会实例化
 };
 int main() {
-	Stack<char> *sc;					// (d)
-	f1(*sc);							// (e)
-	int iObj = sizeof(Stack< string >);	// (f)
+	Stack<char> *sc;					// (d) 指针，不会实例化
+	f1(*sc);							// (e) 函数调用，实例化
+	int iObj = sizeof(Stack< string >);	// (f) 实例化，sizeof时类型定义必须是可见的，所以会实例化
 }
+
+// 模板在使用的时候编译器才会进行实例化
 ```
 
-**Exercise 16.28:** Write your own versions of shared_ptr and unique_ptr.Exercise 16.29: Revise your Blob class to use your version of shared_ptr rather
+**Exercise 16.28:** Write your own versions of shared_ptr and unique_ptr.Exercise 16.29: Revise your Blob class to use your version of shared_ptr rather than the library version.
 
-than the library version.
+```c++
+
+```
 
 **Exercise 16.30:** Rerun some of your programs to verify your shared_ptr and re-vised Blob classes. (Note: Implementing the weak_ptr type is beyond the scope ofthis Primer, so you will not be able to use the BlobPtr class with your revised Blob.)
 
@@ -384,3 +453,10 @@ g(42); g(p); g(ci); g(p2); f(42); f(p); f(ci); f(p2);
 - 类模板成员函数的实例化：默认情况下，**一个类模板的成员函数只有当程序用到它时才进行实例化**。如果一个成员函数没有被使用，则它不会被实例化。*这一特性使得某些类型不能完全符合模板操作的要求，仍然能用该类型实例化类*。
 - **在使用一个类模板类型时必须提供模板参数**，但有一个例外，当在类模板自己的作用域中时，可以直接使用模板名而不提供实参。
 - 当一个类包含一个友元声明时，类有友元各自是否是模板是**相互无关**的。如果一个类模板包含一个非模板友元，则友元被授权可以访问所有模板实例。**如果友元自身是模板，类可以授权给所有友元模板的实例，也可以只授权给特定实例**。
+
+
+- 模板参数遵循普通的作用域规则，但是参数名不能重用，所以一个模板参数名在一个特定模板参数列表中**只能出现一次**。
+- 当希望通知编译器一个名字表示类型时，必须使用关键字typename，而不能使用class。
+- 一个类（无论是普通类还是模板类）可以包含本身是模板的成员函数。这种成员被称为**成员模板（member  template）**。成员模板不能是虚函数。
+- 当模板被使用时才会进行实例化，这一特性意味着，相同的实例可能出现在多个对象文件中。**当两个或多个独立编译的源文件使用了相同的模板，并提供了相同的模板参数时，每个文件中就都会有该模板的一个实例**。
+- 实例化定义会实例化所有成员，因此在一个类模板的实例化定义中，所用类型必须能用于模板的所有成员。

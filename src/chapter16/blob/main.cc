@@ -34,6 +34,14 @@
 using namespace std;
 using std::cin; using std::cout; using std::endl;
 
+template<typename T>
+void print(T &t) {
+    auto it = t.begin();
+    while (it != t.end()) {
+        cout << *it++ << endl;
+    }
+}
+
 int main() {
     // ref: vector
     const std::vector<int> a = {1, 2, 3};
@@ -122,5 +130,9 @@ int main() {
     for (auto i:iblob) {
         cout << i << endl;
     }
+
+    // member template
+    Blob<int> mt(begin(array), end(array));
+    print(mt);
     return 0;
 }
