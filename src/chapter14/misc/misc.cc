@@ -49,7 +49,64 @@ public:
     }
 };
 
+struct Integral {
+    operator const int() { return 100; }
+
+    operator int() const { return 150; }
+};
+
 int add(int a, int b) { return a + b; }
+
+struct SmallInt {
+    friend SmallInt operator+(const SmallInt &, const SmallInt &);
+
+public:
+    SmallInt(int = 0) {}
+
+    operator int() const {
+        cout << "SmallInt: operator int()" << endl;
+        return val;
+    }
+
+private:
+    std::size_t val;
+};
+
+struct LongDouble {
+    LongDouble(double = 0.0) {}
+
+    LongDouble operator+(const SmallInt &) {
+        cout << " LongDouble operator+(const SmallInt &) " << endl;
+        return *this;
+    }
+
+    operator double() {
+        cout << "LongDouble: operator double()" << endl;
+        return 1.1;
+    }
+
+    operator float() {
+        cout << "LongDouble: operator float()" << endl;
+        return 2.2;
+    }
+};
+
+LongDouble operator+(LongDouble &l, double d) {
+    LongDouble ret = l;
+    cout << "LongDouble operator+(LongDouble &l, double d)" << endl;
+    return ret;
+}
+
+SmallInt operator+(const SmallInt &lhs, const SmallInt &rhs) {
+    SmallInt ret = lhs;
+    ret.val += rhs.val;
+    cout << "SmallInt operator+(const SmallInt &lhs, const SmallInt &rhs)" << endl;
+    return ret;
+}
+
+void calc(int) { cout << "calc(int)" << endl; }
+
+void calc(LongDouble) { cout << "calc(LongDouble)" << endl; }
 
 int main() {
     string world = "world";
@@ -96,5 +153,29 @@ int main() {
     cout << binops["-"](10, 5) << endl;
     cout << binops["*"](10, 5) << endl;
     cout << binops["/"](10, 5) << endl;
+
+    //
+    cout << endl;
+    Integral integral;
+    const int i = static_cast<int>(integral);
+    int ii = static_cast<int>(integral);
+    cout << i << " " << ii << endl;
+
+    cout << endl;
+    LongDouble ldObj;
+    //int ex1 = ldObj; // ambiguous
+    float ex2 = ldObj;
+    cout << ex2 << endl;
+
+    double dval = .1;
+    calc(dval);// which calc?
+
+
+    cout << endl;
+    SmallInt si;
+    LongDouble ld;
+    ld = si + ld;
+    //ld = ld + si;
+    //double d = si + 3.14;
     return 0;
 }

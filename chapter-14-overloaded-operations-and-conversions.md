@@ -309,10 +309,20 @@ cout << binops["*"](10, 5) << endl;
 cout << binops["/"](10, 5) << endl;
 ```
 
-
 **Exercise 14.45:** Write conversion operators to convert a Sales_data to string andto double. What values do you think these operators should return?
 
+```c++
+// conversion operator
+// string应该返回ISBN，double就返回总收入
+explicit operator std::string() const { return bookNo; }
+explicit operator double() const { return revenue; }
+```
+
 **Exercise 14.46:** Explain whether defining these Sales_data conversion operators isa good idea and whether they should be explicit.
+
+```c++
+// 可以定义；应该为explicit
+```
 
 **Exercise 14.47:** Explain the difference between these two conversion operators:
 
@@ -320,7 +330,12 @@ cout << binops["/"](10, 5) << endl;
 struct Integral {
        operator const int();
        operator int() const;
-};		
+};
+
+---
+// 相当于是对const的类型转换操作符的重载，适用函数匹配规则，查找最佳匹配
+operator const int(); // Integral对象不是const的时候匹配，const是顶层const会被忽略
+operator int() const; // Integral对象是const的时候匹配
 ```
 
 **Exercise 14.48:** Determine whether the class you used in exercise 7.40 from § 7.5.1(p. 291) should have a conversion to bool. If so, explain why, and explain whether theoperator should be explicit. If not, explain why not.
@@ -338,6 +353,10 @@ struct LongDouble {
 LongDouble ldObj;
 int ex1 = ldObj;
 float ex2 = ldObj;
+
+---
+ex1 有二义性，float、double都可以转换为int，编译器认为转换时同一级别，无法区分
+ex2 匹配operator float();
 ```
 
 **Exercise 14.51:** Show the conversion sequences (if any) needed to call each version of calc and explain why the best viable function is selected.
@@ -347,6 +366,10 @@ void calc(int);
 void calc(LongDouble); 
 double dval; 
 calc(dval);// which calc?				
+
+---
+可能是double->int,或者double->LongDouble
+实验结果是：double->int的转换优先级高
 ```
 
 **Exercise 14.52:** Which `operator+`, if any, is selected for each of the addition expressions? List the candidate functions, the viable functions, and the type conversions on the arguments for each viable function:
@@ -361,6 +384,16 @@ LongDouble operator+(LongDouble&, double); SmallInt si;
 LongDouble ld;
 ld = si + ld;
 ld = ld + si;
+
+---
+ld = si + ld; 
+// 没有匹配参数的重载运算符，编译器尝试使用内置+运算符，由于LongDouble可用转换为double和float，二义性。
+// error: ambiguous overload for 'operator+' (operand types are 'SmallInt' and 'LongDouble')
+// candidate: operator+(int, double) <built-in>
+// candidate: operator+(int, float) <built-in>
+
+ld = ld + si; 
+// 精确匹配：LongDouble operator+(const SmallInt&);
 ```
 
 **Exercise 14.53:** Given the definition of SmallInt on page 588, determine whether the following addition expression is legal. If so, what addition operator is used? If not, how might you change the code to make it legal?
@@ -368,6 +401,14 @@ ld = ld + si;
 ```c++
 SmallInt s1;
 double d = s1 + 3.14;
+
+---
+// error: ambiguous overload for 'operator+' (operand types are 'SmallInt' and 'double')
+// candidate: operator+(int, double) <built-in>
+// candidate: SmallInt operator+(const SmallInt&, const SmallInt&)
+
+// 有两种可能，一种是double->int->SmallInt，然后调用重载的+运算符
+// 另外一种就是si->int->double，然后执行内置的+运算符；编译器无法区分，二义性。
 ```
 
 ### Notes
@@ -448,3 +489,35 @@ double d = s1 + 3.14;
 - C++语言中有几种可调用的对象：<u>函数、函数指针、lambda表达式、bind创建的对象以及重载了函数调用运算符的类</u>。
 - 调用形式（call signature）：不同类型的可调用对象可能共享同一种调用形式。调用形式指明了调用返回的类型以及传递给调用的实参类型。<u>一种调用类型对应一个函数类型</u>。（应该可理解为函数原型）
 
+
+- <u>转换构造函数和类型转换运算符共同定义了类类型转换</u>（class-type conversions），<u>这样的转换有时也被称作用户定义的类型转换（user-defined conversion）</u>。
+
+- 一个类型转换函数必须是类的成员函数；它不能声明返回类型，形参列表页必须为空。类型转换函数通常应该是const。
+
+- 一个类型转换运算符（conversion operator）是类的一种特殊成员，它负责将一个类类型的值转换成其他类型。
+
+- ```c++
+  operator type() const;
+  ```
+
+- C++11新标准引入了显式的类型转换运算符（explicit conversion operator），必须通过显式的强制类型转换才可以。不过该规定有一个例外，即<u>如果表达式被用作条件，则编译器会将显式的类型转换自动应用于它</u>。换句话说，当表达式出现在下列位置时（注：*基本上都是作为条件时*），显式的类型转换将被隐式地执行：
+  - if、while及do语句的条件部分
+  - for语句头的条件表达式
+  - 逻辑非运算符（!）、逻辑或运算符（&&）、逻辑与运算符（||）的运算对象
+  - 条件运算符（? :）的条件表达式
+
+
+- 向bool的类型转换通常用在条件部分，因此operator bool一般定义为explicit的。
+
+
+- 通常情况下，<u>不要为类定义相同的类型转换，也不要在类中定义两个及两个以上转换源或转换目标是算术类型的转换</u>。
+  - 两个类提供相同的类型转换：A类定义了一个接受B类对象的转换构造函数，同时B类定义了一个转换目标是A类的类型转换运算符时，就说它们提供了相同的类型转换。
+  - 定义了多个转换规则，而这些转换涉及的类型本身可以通过其他类型转换联系在一起。最典型的例子就是算术运算符。Note：<u>当使用两个用户定义的类型转换时，如果转换函数之前或之后存在标准类型转换，则标准类型转换将决定最佳匹配到底是哪个</u>。
+  - 参见“提示：类型转换与运算符P519”。一言以蔽之：<u>除了显式地向bool类型的转换之外，我们应该尽量避免定义类型转换函数并尽可能地限制那些“显然正确”的非显式构造函数</u>。
+
+
+- <u>在调用重载函数时，如果需要额外的标准转换类型，则该转换的级别只有当所有可行函数都请求同一个用户定义的类型转换时才有用。如果所需的用户定义的类型转换不止一个，则该调用具有二义性</u>。
+
+
+- 当使用重载运算符作用于类类型的对象时，候选函数中包含该运算符的普通非成员版本和内置版本。除此之外，如果左侧运算对象是类类型，则定义在该类中的运算符的重载版本也包含在候选函数内。
+- <u>如果对同一个类既提供了转换目标是算术类型的类型转换，也提供了重载的运算符，则将会遇到重载运算符与内置运算符的二义性问题</u>。

@@ -62,6 +62,11 @@ public:
 
     double avg_price() const;
 
+    // conversion operator
+    explicit operator std::string() const { return bookNo; }
+
+    explicit operator double() const { return revenue; }
+
 private:
     std::string bookNo;
     unsigned units_sold = 0;
