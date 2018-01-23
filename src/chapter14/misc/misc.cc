@@ -174,8 +174,8 @@ int main() {
     cout << endl;
     SmallInt si;
     LongDouble ld;
-    ld = si + ld;
-    //ld = ld + si;
+    //ld = si + ld;
+    ld = ld + si;
     //double d = si + 3.14;
     return 0;
 }
