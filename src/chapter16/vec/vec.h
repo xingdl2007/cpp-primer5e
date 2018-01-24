@@ -71,6 +71,9 @@ public:
 
     void push_back(T &&);
 
+    template<typename ... Args>
+    void emplace_back(Args &&...);
+
     void resize(std::size_t);
 
     void resize(std::size_t, const T &);
@@ -167,6 +170,13 @@ template<typename T>
 void Vec<T>::push_back(T &&s) {
     check_n_alloc();
     alloc.construct(first_free++, std::move(s));
+}
+
+template<typename T>
+template<typename ... Args>
+void Vec<T>::emplace_back(Args &&...args) {
+    check_n_alloc();
+    alloc.construct(first_free++, std::forward<Args>(args)...);
 }
 
 template<typename T>

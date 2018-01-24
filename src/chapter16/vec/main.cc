@@ -50,6 +50,10 @@ int main() {
     }
     svec.resize(10);
     svec.resize(15, "hello");
+
+    // new API
+    svec.emplace_back("ok, I see");
+
     for (auto &s:svec) {
         std::cout << s << " ";
     }
@@ -71,5 +75,7 @@ int main() {
     const Vec<std::string> cvec = svec;
     svec[0] = "modify";
     //cvec[0] = "modify"; // error
+
+    svec.emplace_back("ok, I see");
     return 0;
 }

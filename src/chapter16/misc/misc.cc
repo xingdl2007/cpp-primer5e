@@ -34,6 +34,9 @@
 #include <list>
 #include <cassert>
 #include <memory>
+#include <functional>
+#include <type_traits>
+#include <limits>
 
 using namespace std;
 
@@ -169,6 +172,41 @@ namespace exercise {
         //Stack<double> &rsd;
         Stack<int> si;
     };
+
+
+    // move defination
+    template<typename T>
+    typename remove_reference<T>::type &&move(T &&t) {
+        return static_cast<typename remove_reference<T>::type &&> (t);
+    }
+
+    //flip
+    void f(int v1, int v2) {
+        cout << "v1: " << v1 << " v2: " << ++v2 << endl;
+    }
+
+    template<typename F, typename T1, typename T2>
+    void flip1(F f, T1 t1, T2 t2) {
+        f(t2, t1);
+    };
+
+    void g(int v1, int &v2) {
+        cout << "v1: " << v1 << " v2: " << ++v2 << endl;
+    }
+
+    template<typename F, typename T1, typename T2>
+    void flip2(F f, T1 &&t1, T2 &&t2) {
+        f(t2, t1);
+    };
+
+    void h(int &&v1, int &v2) {
+        cout << "v1: " << v1 << " v2: " << v2 << endl;
+    }
+
+    template<typename F, typename T1, typename T2>
+    void flip3(F f, T1 &&t1, T2 &&t2) {
+        f(std::forward<T2>(t2), std::forward<T1>(t1));
+    };
 }
 
 // 16.18
@@ -235,12 +273,57 @@ private:
 template<typename>
 class Test;
 
+// 16.36
+template<typename T>
+void ff1(T, T) {}
+
+template<typename T1, typename T2>
+void ff2(T1, T2) {}
+
+int i = 0, j = 42, *p1 = &i, *p2 = &j;
+const int *cp1 = &i, *cp2 = &j;
+
+void test() {
+    ff1(p1, p2);
+    ff2(p1, p2);
+    ff1(cp1, cp2);
+    ff2(cp1, cp2);
+    //ff1(p1, cp1); // error: no matching function for call to 'ff1(int*&, const int*&)'
+    ff2(p1, cp1);
+}
+
+template<typename It>
+auto first(It beg, It end) -> typename std::remove_reference<decltype(*beg)>::type {
+    if (beg == end) {
+        throw std::runtime_error("beg == end");
+    }
+    return *beg;
+}
+
+template<typename It>
+auto fcn3(It beg, It end) -> decltype(*beg + 0) {
+    if (beg == end) {
+        throw std::runtime_error("beg == end");
+    }
+    return *beg;
+}
+
+// limited version
+template<typename T>
+auto sum(T lhs, T rhs) -> typename make_unsigned<decltype(lhs + rhs)>::type {
+    return lhs + rhs;
+}
+
+// 16.45
+template<typename T>
+void g(T &&val) { vector<T> v; }
+
 int main() {
     cout << compare(1, 2) << endl;                              // -1
 
     // ambiguous: two candidate, with T = char [6] and M = N = 6
-    // cout << compare("hello", "world") << endl;
-    cout << compare("hi", "mom") << endl;                       // 1
+    //cout << compare("lo", "world") << endl;
+    cout << compare<const char *>("hi", "mom") << endl;                       // 1
 
     const char *p1 = "hi";
     const char *p2 = "mom";
@@ -309,8 +392,45 @@ int main() {
     int iObj = sizeof(exercise::Stack<string>);
     cout << "iObj: " << iObj << endl;
 
-
     // test
-    //Test<string> *tt;
+    test();
+
+    // 16.37
+    int i_int = 3;
+    double d_double = 2.9;
+    cout << std::max<double>(i_int, d_double) << endl;
+
+    cout << "\nfirst() test:" << endl;
+    cout << first(ivec.begin(), ivec.end()) << endl;
+    cout << fcn3(ivec.begin(), ivec.end()) << endl;
+
+    // 16.41
+    cout << "\nnew sum:\n";
+    // right result
+    cout << std::numeric_limits<int>::max() << endl;
+    cout << sum(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()) << endl;
+
+    // wrong result
+    cout << std::numeric_limits<int>::min() << endl;
+    cout << sum(std::numeric_limits<int>::min(), std::numeric_limits<int>::min()) << endl;
+
+    // wrong result
+    cout << std::numeric_limits<unsigned int>::max() << endl;
+    cout << sum(std::numeric_limits<unsigned int>::max(), std::numeric_limits<unsigned int>::max()) << endl;
+
+    // 16.45
+    g(42);
+
+    // r-value reference
+    int &&ref = static_cast<int &&>(i_int);
+    cout << ref << endl;
+
+    // 16.47
+    exercise::flip1(exercise::f, 1, 2);
+    int j = 2;
+    exercise::flip2(exercise::g, j, 1);
+    cout << j << endl;
+
+    exercise::flip3(exercise::h, j, 1);
     return 0;
 }
