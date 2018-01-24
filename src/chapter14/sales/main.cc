@@ -31,14 +31,23 @@
 
 #include <string>
 #include <iostream>
+#include <unordered_set>
 #include "Sales_data.h"
 
 using namespace std;
 
 int main() {
     Sales_data s1("111-222-333-444", 10, 20), s2("111-222-333-444", 3, 25);
+
+    // hast<Sales_data> test
+    unordered_multiset<Sales_data> SD = {s1, s2};
+    for (auto it: SD) {
+        cout << it << endl;
+    }
+
     cout << s1 + s2 << endl;
     cin >> s1;
     cout << s1 << endl;
+
     return 0;
 }

@@ -34,6 +34,14 @@ using std::istream; using std::ostream;
 
 #include "Sales_data.h"
 
+namespace std {
+    std::size_t hash<Sales_data>::operator()(const Sales_data &s) const {
+        return hash<string>()(s.bookNo) ^
+               hash<unsigned>()(s.units_sold) ^
+               hash<double>()(s.revenue);
+    }
+}
+
 Sales_data::Sales_data(std::istream &is) {
     // read will read a transaction from is into this object
     is >> *this;

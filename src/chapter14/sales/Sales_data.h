@@ -42,6 +42,8 @@ class Sales_data {
 
     friend bool operator==(const Sales_data &, const Sales_data &);
 
+    friend class std::hash<Sales_data>;
+
 public:
     // constructors
     Sales_data() = default;
@@ -87,6 +89,16 @@ bool operator!=(const Sales_data &, const Sales_data &);
 // used in future chapters
 inline bool compareIsbn(const Sales_data &lhs, const Sales_data &rhs) {
     return lhs.isbn() < rhs.isbn();
+}
+
+namespace std {
+    template<>
+    struct hash<Sales_data> {
+        typedef std::size_t result_type;
+        typedef Sales_data argument_type;
+
+        std::size_t operator()(const Sales_data &s) const;
+    };
 }
 
 #endif
