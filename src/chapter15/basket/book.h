@@ -63,6 +63,14 @@ public:
                   << "> <price: " << price << "> " << std::endl;
     }
 
+    virtual Quote *clone() const &{
+        return new Quote(*this);
+    }
+
+    virtual Quote *clone() &&{
+        return new Quote(std::move(*this));
+    }
+
 private:
     std::string bookNo;
 protected:
