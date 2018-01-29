@@ -460,12 +460,26 @@ private:
 (a) Query(s1) | Query(s2) & ~ Query(s3);
 (b) Query(s1) | (Query(s2) & ~ Query(s3));
 (c) (Query(s1) & (Query(s2)) | (Query(s3) & Query(s4)));
+
+---
+(a) AndQuery(OrQuery(s1,s2), NotQuery(s3))
+(b) OrQuery(s1,AndQuery(s2,NotQuery(s3)))
+(c) OrQuery(AndQuery(s1,s2),AndQuery(s3,s4))
 ```
 
+**Exercise 15.32:** What happens when an object of type Query is copied, moved, assigned, and destroyed?
 
-**Exercise 15.32:** What happens when an object of type Query is copied, moved, as-signed, and destroyed?
+```c++
+// Query类中的数据成员只是一个shared_ptr，值语义，当一个Query对象拷贝、移动、赋值或销毁时，其行为取决于
+// 智能指针相应的行为
+```
 
-**Exercise 15.33:** What about objects of type Query_base?						
+**Exercise 15.33:** What about objects of type Query_base?
+
+```c++
+// Query_base类时抽象基类，不会有Query_base类型的对象，只会有其派生类的对象
+// 其派生类对象中的数据成员为Query和string，两个都是值语义			
+```
 
 **Exercise 15.34:** For the expression built in Figure 15.3 (p. 638):
 
@@ -481,18 +495,38 @@ private:
 
 **Exercise 15.37:** What changes would your classes need if the derived classes hadmembers of type `shared_ptr<Query_base>` rather than of type Query?
 
-**Exercise 15.38:** Are the following declarations legal? If not, why not? If so, explainwhat the declarations mean.
+```c++
+// Query类本身其实就只是Query_base的简单封装，完全可以显式的替换为shared_ptr<Query_base>而存放在派生类
+// 之中，不过这样的话需要修改构造函数、数据成员等等
+
+// 使用Query可以使代码变得更加清晰和一致
+```
+
+**Exercise 15.38:** Are the following declarations legal? If not, why not? If so, explain what the declarations mean.
 
 ```c++
 BinaryQuery a = Query("fiery") & Query("bird"); 
 AndQuery b = Query("fiery") & Query("bird"); 
 OrQuery c = Query("fiery") & Query("bird");
-```
 
+---
+// 不合法；重载运算符返回是Query对象的对象，这三个语句实际从Query类型的对象向QueryBase的派生类对象的隐式转换
+// 由于不存在相应的转换存在，所以均不合法
+
+Query a = Query("fiery") & Query("bird");
+Query b = Query("fiery") & Query("bird");
+Query c = Query("fiery") & Query("bird");
+```
 
 **Exercise 15.39:** Implement the Query and Query_base classes. Test your applicationby evaluating and printing a query such as the one in Figure 15.3 (p. 638).
 
 **Exercise 15.40:** In the OrQuery eval function what would happen if its rhs memberreturned an empty set? What if its lhs member did so? What if both rhs and lhsreturned empty sets?
+
+```c++
+ret_lines->insert(right.begin(), right.end());
+// 任何一个为空集，都不会影响程序的正确性
+// 如果lhs和rhs均为空，会使用一个空的set来构造QueryResult
+```
 
 **Exercise 15.41:** Reimplement your classes to use built-in pointers to Query_base rather than shared_ptrs. Remember that your classes will no longer be able to use the synthesized copy-control members.
 
