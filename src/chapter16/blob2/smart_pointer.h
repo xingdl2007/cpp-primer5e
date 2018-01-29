@@ -188,8 +188,12 @@ namespace exercise {
         // move ctor
         unique_ptr(unique_ptr &&u) : ptr(u.ptr), del(u.del) { u.ptr = nullptr; }
 
+        unique_ptr(unique_ptr &u) = delete;
+
         // move assignment
         unique_ptr &operator=(unique_ptr &&u);
+
+        unique_ptr &operator=(unique_ptr &) = delete;
 
         T operator*() const { return *ptr; }
 
