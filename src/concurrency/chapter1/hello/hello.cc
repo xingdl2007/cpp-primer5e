@@ -6,10 +6,10 @@
 #include <thread>
 
 void hello() {
-    std::cout << "Hello Concurrent World" << std::endl;
+  std::cout << "Hello Concurrent World" << std::endl;
 }
 
 int main() {
-    std::thread t(hello);
-    t.join();
+  std::thread t(hello);
+  t.join();
 }

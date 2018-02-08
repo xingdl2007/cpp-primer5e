@@ -1,3 +1,2 @@
-project(CHAPTER1 CXX)
-
 add_subdirectory(chapter1)
+add_subdirectory(chapter2)
