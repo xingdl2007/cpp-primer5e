@@ -21,10 +21,10 @@ struct accumulate_block {
 
 template <typename Iterator, typename T>
 T parallel_accumulate(Iterator first, Iterator last, T init) {
-  unsigned long const length = std::distance(first, last);
-
-  if (!length) // 1
+  long const length = std::distance(first, last);
+  if (length <= 0) {
     return init;
+  }
 
   unsigned long const min_per_thread = 25;
   unsigned long const max_threads =
@@ -60,11 +60,15 @@ T parallel_accumulate(Iterator first, Iterator last, T init) {
 
 int main() {
   vector<int> ivec;
-  default_random_engine e;
-  uniform_int_distribution<unsigned> u(0, 100);
+  // second since epoch
+  // cout << time(0) << endl;
+  default_random_engine e(time(0));
+  uniform_int_distribution<int> u(0, 100);
   for (int i = 0; i < 10000; ++i) {
     ivec.push_back(u(e));
   }
   cout << parallel_accumulate(ivec.begin(), ivec.end(), 0) << endl;
+
+  cout << std::this_thread::get_id() << endl;
   return 0;
 }
