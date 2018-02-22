@@ -1,0 +1,6 @@
+PROJECT(chapter4 CXX)
+add_subdirectory(queue)
+add_subdirectory(future)
+add_subdirectory(shared_future)
+add_subdirectory(promise)
+add_subdirectory(exception)
