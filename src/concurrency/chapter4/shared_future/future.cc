@@ -1,3 +1,7 @@
+//
+// C++ concurrency in Action.
+//
+
 #include <iostream>
 #include <future>
 #include <chrono>

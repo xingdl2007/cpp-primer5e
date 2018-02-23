@@ -1,6 +1,7 @@
 //
 // C++ concurrency in Action.
 //
+
 #include <future>
 #include <iostream>
 
