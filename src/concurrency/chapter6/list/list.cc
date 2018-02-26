@@ -72,6 +72,7 @@ public:
       std::unique_lock<std::mutex> next_lk(next->m);
       if (p(*next->data)) {
         // should unlock next_lk before destroy "std::unique_ptr<node> old_next"
+        // because it's undefined behavior to destroy a locked mutex
         std::unique_ptr<node> old_next = std::move(current->next);
         current->next = std::move(next->next);
         next_lk.unlock();
