@@ -20,7 +20,7 @@ private:
 public:
   threadsafe_queue() = default;
   threadsafe_queue(const threadsafe_queue &_other) {
-    std::lock_guard<std::mutex> lock2(_other.m);
+    std::lock_guard<std::mutex> lock(_other.m);
     data = _other.data;
   }
   threadsafe_queue &operator=(
