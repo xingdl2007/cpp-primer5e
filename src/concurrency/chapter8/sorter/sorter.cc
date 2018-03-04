@@ -70,8 +70,7 @@ struct sorter {
   thread_safe_stack<chunk_to_sort> chunks;
   std::mutex m;
   std::vector<std::thread> threads;
-  //unsigned const max_thread_count{std::thread::hardware_concurrency() - 1};
-  unsigned const max_thread_count{2};
+  unsigned const max_thread_count{std::thread::hardware_concurrency() - 1};
   std::atomic<bool> end_of_data{false};
 
   sorter() = default;
