@@ -103,12 +103,12 @@ struct sorter {
     std::future<std::list<T>> new_lower = new_lower_chunk.promise.get_future();
     // move semantic
     chunks.push(std::move(new_lower_chunk));
-
-    std::unique_lock<std::mutex> lock(m);
-    if (threads.size() < max_thread_count) {
-      threads.push_back(std::thread(&sorter<T>::sort_thread, this));
+    {
+      std::lock_guard<std::mutex> lock(m);
+      if (threads.size() < max_thread_count) {
+        threads.push_back(std::thread(&sorter<T>::sort_thread, this));
+      }
     }
-    lock.unlock();
 
     std::list<T> new_higher(do_sort(chunk_data));
     result.splice(result.end(), new_higher);
