@@ -61,7 +61,7 @@ public:
 };
 
 template <typename T>
-struct sorter {
+struct misc {
   struct chunk_to_sort {
     std::list<T> data;
     std::promise<std::list<T>> promise;
@@ -73,9 +73,9 @@ struct sorter {
   unsigned const max_thread_count{std::thread::hardware_concurrency() - 1};
   std::atomic<bool> end_of_data{false};
 
-  sorter() = default;
+  misc() = default;
 
-  ~sorter() {
+  ~misc() {
     end_of_data = true;
     for (unsigned i = 0; i < threads.size(); ++i) {
       threads[i].join();
@@ -105,7 +105,7 @@ struct sorter {
     {
       std::lock_guard<std::mutex> lock(m);
       if (threads.size() < max_thread_count) {
-        threads.push_back(std::thread(&sorter<T>::sort_thread, this));
+        threads.push_back(std::thread(&misc<T>::sort_thread, this));
       }
     }
 
@@ -144,7 +144,7 @@ std::list<T> parallel_quick_sort(std::list<T> input) {
   if (input.empty()) {
     return input;
   }
-  sorter<T> s;
+  misc<T> s;
   return s.do_sort(input);
 }
 
