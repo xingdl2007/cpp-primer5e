@@ -15,20 +15,20 @@ struct empty_stack : std::exception {
 };
 
 template <typename T>
-class threadsafe_stack {
+class thread_safe_stack {
 private:
   std::stack<T> data;
   mutable std::mutex m;
 
 public:
-  threadsafe_stack() = default;
+  thread_safe_stack() = default;
 
   // copy-ctor, important to held source lock across copy
-  threadsafe_stack(const threadsafe_stack &other) {
+  thread_safe_stack(const thread_safe_stack &other) {
     std::lock_guard<std::mutex> lock(other.m);
     data = other.data;
   }
-  threadsafe_stack &operator=(const threadsafe_stack &) = delete;
+  thread_safe_stack &operator=(const thread_safe_stack &) = delete;
 
   void push(T new_value) {
     std::lock_guard<std::mutex> lock(m);
@@ -62,7 +62,7 @@ public:
 
 // cout is not thread safe, so output will interleaved
 template <typename T>
-void worker(threadsafe_stack<T> &stack) {
+void worker(thread_safe_stack<T> &stack) {
   int count = 0;
   try {
     while (true) {
@@ -82,7 +82,7 @@ void waiting(std::thread &t) {
 }
 
 int main() {
-  threadsafe_stack<int> stack;
+  thread_safe_stack<int> stack;
   for (int i = 0; i < 1000; ++i) {
     stack.push(i);
   }
