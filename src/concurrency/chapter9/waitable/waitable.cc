@@ -235,10 +235,10 @@ struct Tester {
 struct Num {
   int i;
   Num() : i(10) {}
-
+  void operator()() {}
   // enable move
-  Num(Num &&) = default;
-  Num &operator=(Num &&) = default;
+  Num(Num &&) = delete;
+  Num &operator=(Num &&) = delete;
 
   // disable copy
   Num(const Num &) = delete;
@@ -265,6 +265,24 @@ public:
   MovableTest &operator=(const MovableTest &) = delete;
 };
 
+// the difference with MovableTest and MovableTest2 is
+// 2 has a template function, which will accept lvalue reference
+// while MovableTest will not accept
+// very interesting
+struct MovableTest2 {
+public:
+  template <typename T>
+  MovableTest2(T &&t_) {
+    T t(t_);
+  }
+
+  MovableTest2(MovableTest2 &&other) = default;
+  MovableTest2 &operator=(MovableTest2 &&other) = default;
+
+  MovableTest2(const MovableTest2 &) = delete;
+  MovableTest2 &operator=(const MovableTest2 &) = delete;
+};
+
 template <typename T>
 void func(T &&t) {
   std::cout << t << std::endl;
@@ -277,16 +295,13 @@ int main() {
   f = Tester();
 
   // Movable test
-  MovableTest<Num> m{Num()};
-  MovableTest<Num> n(std::move(m));
-
-  // different with
-  // auto num = Num();
-  // MovableTest<Num> m{num};
-  // must use MovableTest<Num> m{Num()};
   int i = 42;
   func(i);
 
+  Num num;
+  // num is non-copyable and non-movable is ok
+  function_wrapper func(num);
+  // ------------------------------------------------
   // simple thread pool which can return value
   thread_pool threads;
   // cout
