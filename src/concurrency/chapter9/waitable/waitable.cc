@@ -147,7 +147,7 @@ class function_wrapper {
   template <typename F>
   struct impl_type : impl_base {
     F f;
-    // actually std::forward<F>(f_) is unnecessary just f(f_) is ok
+    // forward is necessary
     explicit impl_type(F &&f_) : f(std::forward<F>(f_)) {}
     void call() override { f(); }
   };
@@ -232,11 +232,60 @@ struct Tester {
   }
 };
 
+struct Num {
+  int i;
+  Num() : i(10) {}
+
+  // enable move
+  Num(Num &&) = default;
+  Num &operator=(Num &&) = default;
+
+  // disable copy
+  Num(const Num &) = delete;
+  Num &operator=(const Num &) = delete;
+
+};
+
+// which assumption: T must be also movable
+// or add another indirection
+template <typename T>
+class MovableTest {
+private:
+  T t;
+public:
+  // forward is necessary
+  MovableTest(T &&t_) : t(std::forward<T>(t_)) {}
+  MovableTest(MovableTest &&other) : t(std::move(other.t)) {
+  }
+  MovableTest &operator=(MovableTest &&other) {
+    t = std::move(other.t);
+    return *this;
+  }
+  MovableTest(const MovableTest &) = delete;
+  MovableTest &operator=(const MovableTest &) = delete;
+};
+
+template <typename T>
+void func(T &&t) {
+  std::cout << t << std::endl;
+}
+
 int main() {
   // function_wrapper simple  test
   Tester tester;
   function_wrapper f(tester);
   f = Tester();
+
+  // Movable test
+  MovableTest<Num> m{Num()};
+  MovableTest<Num> n(std::move(m));
+
+  // different with
+  // auto num = Num();
+  // MovableTest<Num> m{num};
+  // must use MovableTest<Num> m{Num()};
+  int i = 42;
+  func(i);
 
   // simple thread pool which can return value
   thread_pool threads;
