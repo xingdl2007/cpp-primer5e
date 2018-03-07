@@ -8,8 +8,10 @@
 #include <functional>
 #include <numeric>
 #include <thread>
-#include <vector>
-#include <deque>
+#include <random>
+#include <list>
+#include <string>
+#include <queue>
 #include <future>
 #include <iostream>
 
@@ -156,7 +158,6 @@ class function_wrapper {
   std::unique_ptr<impl_base> impl;
 public:
   function_wrapper() = default;
-
   template <typename F>
   function_wrapper(F &&f):
       impl(new impl_type<F>(std::forward<F>(f))) {}
@@ -181,20 +182,45 @@ public:
 class thread_pool {
 // Note that the order of declaration of the members is important !!
   std::atomic_bool done;
-  thread_safe_queue<function_wrapper> work_queue;
+  thread_safe_queue<function_wrapper> pool_work_queue;
+
+  typedef std::queue<function_wrapper> local_queue_type;
+  // 1. When used with thread_local, static is implied in block-scope
+  // 2. Within a class definition, a member shall not be declared with the
+  // thread_local storage-class-specifier unless also declared static
+
+  // from cpp reference:
+  // The thread_local keyword is only allowed for objects declared at namespace scope,
+  // objects declared at block scope, and static data members. It indicates that the
+  // object has thread storage duration. It can be combined with static or extern to
+  // specify internal or external linkage (except for static data members which always
+  // have external linkage), respectively, but that additional static doesn't affect
+  // the storage duration.
+
+  /*
+   * When you write an implementation file (.cpp, .cxx, etc) your compiler generates a translation unit.
+   * This is the object file from your implementation file plus all the headers you #included in it.
+   *
+   * Internal linkage refers to everything only in scope of a translation unit.
+   *
+   * External linkage refers to things that exist beyond a particular translation unit.
+   *
+   * In other words, accessible through the whole program, which is the combination of all
+   * translation units (or object files).
+   */
+  // why static? declaring
+  static thread_local std::unique_ptr<local_queue_type> local_work_queue;
+
   std::vector<std::thread> threads;
   join_threads joiner;
 
   void worker_thread() {
+    local_work_queue.reset(new local_queue_type);
     while (!done) {
-      function_wrapper task;
-      if (work_queue.try_pop(task)) {
-        task();
-      } else {
-        std::this_thread::yield();
-      }
+      run_pending_task();
     }
   }
+
 public:
   // ctor
   thread_pool() : done(false), joiner(threads) {
@@ -215,6 +241,19 @@ public:
     done = true;
   }
 
+  void run_pending_task() {
+    function_wrapper task;
+    if (local_work_queue && !local_work_queue->empty()) {
+      task = std::move(local_work_queue->front());
+      local_work_queue->pop();
+      task();
+    } else if (pool_work_queue.try_pop(task)) {
+      task();
+    } else {
+      std::this_thread::yield();
+    }
+  }
+
   template <typename FunctionType>
   std::future<typename std::result_of<FunctionType()>::type>
   submit(FunctionType f) {
@@ -224,150 +263,78 @@ public:
     std::future<result_type> res(task.get_future());
 
     // packaged_task is movable, implicit convert to function_wrapper
-    work_queue.push(std::move(task));
-    return res;
-  }
-};
-
-// exception-safe version
-template <typename Iterator, typename T>
-struct accumulate_block {
-  T operator()(Iterator first, Iterator last) {
-    return std::accumulate(first, last, T());
-  }
-};
-
-template <typename Iterator, typename T>
-T parallel_accumulate(Iterator first, Iterator last, T init) {
-  unsigned long const length = std::distance(first, last);
-
-  if (!length)
-    return init;
-
-  unsigned long const block_size = 25;
-  unsigned long const num_blocks = (length + block_size - 1)/block_size;
-
-  std::vector<std::future<T> > futures(num_blocks - 1);
-  thread_pool pool;
-
-  Iterator block_start = first;
-  for (unsigned long i = 0; i < (num_blocks - 1); ++i) {
-    Iterator block_end = block_start;
-    std::advance(block_end, block_size);
-    futures[i] = pool.submit([=]() -> T {
-      return accumulate_block<Iterator, T>()(block_start, block_end);
-    });
-    block_start = block_end;
-  }
-  T last_result = accumulate_block<Iterator, T>()(block_start, last);
-  T result = init;
-  for (unsigned long i = 0; i < (num_blocks - 1); ++i) {
-    result += futures[i].get();
-  }
-  result += last_result;
-  return result;
-}
-
-// ------------------------------------------------------------------------------------
-struct Tester {
-  void operator()() {
-    // do something
-    std::cout << "hello world" << std::endl;
-  }
-};
-
-struct Num {
-  int i;
-  Num() : i(10) {}
-  void operator()() {}
-  // enable move
-  Num(Num &&) = delete;
-  Num &operator=(Num &&) = delete;
-
-  // disable copy
-  Num(const Num &) = delete;
-  Num &operator=(const Num &) = delete;
-
-};
-
-// which assumption: T must be also movable
-// or add another indirection
-template <typename T>
-class MovableTest {
-private:
-  T t;
-public:
-  // forward is necessary
-  MovableTest(T &&t_) : t(std::forward<T>(t_)) {}
-  MovableTest(MovableTest &&other) : t(std::move(other.t)) {
-  }
-  MovableTest &operator=(MovableTest &&other) {
-    t = std::move(other.t);
-    return *this;
-  }
-  MovableTest(const MovableTest &) = delete;
-  MovableTest &operator=(const MovableTest &) = delete;
-};
-
-// the difference with MovableTest and MovableTest2 is
-// 2 has a template function, which will accept lvalue reference
-// while MovableTest will not accept
-// very interesting
-struct MovableTest2 {
-public:
-  template <typename T>
-  MovableTest2(T &&t_) {
-    T t(t_);
-  }
-
-  MovableTest2(MovableTest2 &&other) = default;
-  MovableTest2 &operator=(MovableTest2 &&other) = default;
-
-  MovableTest2(const MovableTest2 &) = delete;
-  MovableTest2 &operator=(const MovableTest2 &) = delete;
-};
-
-template <typename T>
-void func(T &&t) {
-  std::cout << t << std::endl;
-}
-// ------------------------------------------------------------------------------------
-
-int main() {
-  // ------------------------------------------------
-  // function_wrapper simple  test
-  Tester tester;
-  function_wrapper f(tester);
-  f = Tester();
-
-  // Movable test
-  int i = 42;
-  func(i);
-
-  // num is non-copyable and non-movable is ok
-  Num num;
-  function_wrapper func(num);
-  // ------------------------------------------------
-
-  // simple thread pool which can return value
-  thread_pool threads;
-  threads.submit(tester).get();
-
-  // simple calculation
-  std::future<int> res = threads.submit([]() -> int {
-    int res = 0;
-    for (int i = 1; i <= 10; ++i) {
-      res += i;
+    if (local_work_queue) {
+      local_work_queue->push(std::move(task));
+    } else {
+      pool_work_queue.push(std::move(task));
     }
     return res;
-  });
-  std::cout << res.get() << std::endl;
-
-  // parallel_accumulate
-  std::vector<int> vec;
-  for (int i = 0; i <= 100; ++i) {
-    vec.push_back(i);
   }
-  std::cout << parallel_accumulate(vec.begin(), vec.end(), 0) << std::endl;
-  return 0;
+};
+
+// defining is necessary
+thread_local std::unique_ptr<thread_pool::local_queue_type> thread_pool::local_work_queue;
+
+template <typename T>
+struct sorter {
+  thread_pool pool;
+  std::list<T> do_sort(std::list<T> &chunk_data) {
+    if (chunk_data.empty()) {
+      return chunk_data;
+    }
+    std::list<T> result;
+    result.splice(result.begin(), chunk_data, chunk_data.begin());
+    T const &partition_val = *result.begin();
+
+    typename std::list<T>::iterator divide_point =
+        std::partition(
+            chunk_data.begin(), chunk_data.end(),
+            [&](T const &val) { return val < partition_val; });
+
+    std::list<T> new_lower_chunk;
+    new_lower_chunk.splice(new_lower_chunk.end(),
+                           chunk_data, chunk_data.begin(),
+                           divide_point);
+
+    std::future<std::list<T> > new_lower =
+        pool.submit(
+            std::bind(
+                &sorter::do_sort, this,
+                std::move(new_lower_chunk))); // make sure the data is moved rather than copied
+
+    std::list<T> new_higher(do_sort(chunk_data));
+    result.splice(result.end(), new_higher);
+
+    // if new_lower is not ready, instead of block waiting
+    // do something useful
+    while (new_lower.wait_for(std::chrono::seconds(0)) !=
+        std::future_status::ready) {
+      pool.run_pending_task();
+    }
+
+    // stick low/high part together
+    result.splice(result.begin(), new_lower.get());
+    return result;
+  }
+};
+
+template <typename T>
+std::list<T> parallel_quick_sort(std::list<T> input) {
+  if (input.empty()) {
+    return input;
+  }
+  sorter<T> s;
+  return s.do_sort(input);
+}
+
+int main() {
+  std::list<int> ls;
+  // if too much element in ls, will throw EXC_BAD_ACCESS with g++ 7.2 (macOS 10.13.3)
+  // but ok with g++ 5.4 (Ubuntu 16.04)
+  for (int i = 200; i > 0; --i) {
+    ls.push_back(i);
+  }
+  auto sorted = parallel_quick_sort(ls);
+  std::for_each(sorted.begin(), sorted.end(), [](int i) { std::cout << i << " "; });
+  std::cout << std::endl;
 }
