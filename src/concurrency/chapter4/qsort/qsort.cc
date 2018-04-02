@@ -69,6 +69,7 @@ typename std::result_of<F(A &&)>::type result(F &&f, A &&a) {
 };
 
 // spawn-task: what is the difference between std::move and std::forward?
+// std::forward
 template <typename F, typename A>
 std::future<typename std::result_of<F(A &&)>::type> spawn_task(F &&f, A &&a) {
   typedef typename std::result_of<F(A &&)>::type result_type;

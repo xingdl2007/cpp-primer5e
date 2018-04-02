@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <future>
-#include <chrono>
 
 int main() {
   std::promise<void> ready_promise, t1_ready_promise, t2_ready_promise;
