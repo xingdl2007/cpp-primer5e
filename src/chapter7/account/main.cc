@@ -35,7 +35,7 @@ using std::cout; using std::endl;
 
 using std::string;
 
-#include "Account.h"
+#include "account.h"
 
 int main() {
     Account a1("bem", 42);

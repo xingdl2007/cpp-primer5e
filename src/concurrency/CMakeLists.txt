@@ -1,3 +1,6 @@
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 add_subdirectory(chapter1)
 add_subdirectory(chapter2)
 add_subdirectory(chapter3)

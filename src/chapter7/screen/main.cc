@@ -35,7 +35,7 @@ using std::cout; using std::endl;
 
 using std::string;
 
-#include "Screen.h"
+#include "screen.h"
 
 int main() {
     Screen myScreen(5, 3);
