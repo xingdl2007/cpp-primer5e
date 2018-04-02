@@ -2,6 +2,9 @@
 // Created by xing on 4/2/18.
 //
 
+#pragma once
+
+#include "receiver.h"
 
 class bank_machine {
   messaging::receiver incoming;

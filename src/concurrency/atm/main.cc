@@ -2,13 +2,21 @@
 // Created by xing on 4/2/18.
 //
 
+#include "bank.h"
+#include "interface.h"
+#include "atm.h"
+
+using namespace messaging;
+
 int main() {
   bank_machine bank;
   interface_machine interface_hardware;
   atm machine(bank.get_sender(), interface_hardware.get_sender());
+
   std::thread bank_thread(&bank_machine::run, &bank);
   std::thread if_thread(&interface_machine::run, &interface_hardware);
   std::thread atm_thread(&atm::run, &machine);
+
   messaging::sender atmqueue(machine.get_sender());
 
   bool quit_pressed = false;
@@ -38,11 +46,12 @@ int main() {
       break;
     }
   }
+
   bank.done();
   machine.done();
   interface_hardware.done();
+
   atm_thread.join();
   bank_thread.join();
   if_thread.join();
 }
-

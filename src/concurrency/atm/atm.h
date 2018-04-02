@@ -2,14 +2,22 @@
 // Created by xing on 4/2/18.
 //
 
+#include "queue.h"
+#include "receiver.h"
+#include "sender.h"
+#include "interface.h"
+#include "logic.h"
+
 class atm {
   messaging::receiver incoming;
   messaging::sender bank;
   messaging::sender interface_hardware;
+
   void (atm::*state)();
   std::string account;
   unsigned withdrawal_amount;
   std::string pin;
+
   void process_withdrawal() {
     incoming.wait()
         .handle<withdraw_ok>(
@@ -37,6 +45,7 @@ class atm {
             }
         );
   }
+
   void process_balance() {
     incoming.wait()
         .handle<balance>(
@@ -51,6 +60,7 @@ class atm {
             }
         );
   }
+
   void wait_for_action() {
     interface_hardware.send(display_withdrawal_options());
     incoming.wait()
@@ -73,6 +83,7 @@ class atm {
             }
         );
   }
+
   void verifying_pin() {
     incoming.wait()
         .handle<pin_verified>(
@@ -93,6 +104,7 @@ class atm {
             }
         );
   }
+
   void getting_pin() {
     incoming.wait()
         .handle<digit_pressed>(
@@ -118,6 +130,7 @@ class atm {
             }
         );
   }
+
   void waiting_for_card() {
     interface_hardware.send(display_enter_card());
     incoming.wait()
@@ -130,19 +143,24 @@ class atm {
             }
         );
   }
+
   void done_processing() {
     interface_hardware.send(eject_card());
     state = &atm::waiting_for_card;
   }
+
+  // disable copy
   atm(atm const &) = delete;
   atm &operator=(atm const &)= delete;
 public:
   atm(messaging::sender bank_,
       messaging::sender interface_hardware_) :
       bank(bank_), interface_hardware(interface_hardware_) {}
+
   void done() {
     get_sender().send(messaging::close_queue());
   }
+
   void run() {
     state = &atm::waiting_for_card;
     try {
@@ -153,6 +171,7 @@ public:
     catch (messaging::close_queue const &) {
     }
   }
+
   messaging::sender get_sender() {
     return incoming;
   }

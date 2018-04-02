@@ -2,6 +2,11 @@
 // Created by xing on 4/2/18.
 //
 
+#pragma once
+
+#include "queue.h"
+#include "template.h"
+
 namespace messaging {
 class close_queue {};
 
@@ -12,10 +17,7 @@ class dispatcher {
   dispatcher(dispatcher const &) = delete;
   dispatcher &operator=(dispatcher const &)= delete;
 
-  template<
-      typename Dispatcher,
-      typename Msg,
-      typename Func>
+  template<typename Dispatcher, typename Msg, typename Func>
   friend class TemplateDispatcher;
 
   void wait_and_dispatch() {
@@ -25,13 +27,13 @@ class dispatcher {
     }
   }
 
-  bool dispatch(
-      std::shared_ptr <message_base> const &msg) {
-    if (dynamic_cast<wrapped_message <close_queue> *>(msg.get())) {
+  bool dispatch(std::shared_ptr<message_base> const &msg) {
+    if (dynamic_cast<wrapped_message<close_queue> *>(msg.get())) {
       throw close_queue();
     }
     return false;
   }
+
 public:
   dispatcher(dispatcher &&other) :
       q(other.q), chained(other.chained) {

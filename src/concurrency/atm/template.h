@@ -2,6 +2,11 @@
 // Created by xing on 4/2/18.
 //
 
+#pragma once
+
+#include "logic.h"
+#include "queue.h"
+
 namespace messaging {
 template<typename PreviousDispatcher, typename Msg, typename Func>
 class TemplateDispatcher {
