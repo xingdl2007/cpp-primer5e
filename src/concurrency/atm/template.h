@@ -29,9 +29,9 @@ class TemplateDispatcher {
     }
   }
 
-  bool dispatch(std::shared_ptr <message_base> const &msg) {
-    if (wrapped_message < Msg > *wrapper =
-            dynamic_cast<wrapped_message <Msg> *>(msg.get())) {
+  bool dispatch(std::shared_ptr<message_base> const &msg) {
+    if (wrapped_message<Msg> *wrapper =
+        dynamic_cast<wrapped_message<Msg> *>(msg.get())) {
       f(wrapper->contents);
       return true;
     } else {
