@@ -10,7 +10,7 @@
 using namespace std;
 
 // sequential version quick-sort
-template <typename T>
+template<typename T>
 list<T> sequential_quick_sort(list<T> input) {
   if (input.empty()) {
     return input;
@@ -35,7 +35,7 @@ list<T> sequential_quick_sort(list<T> input) {
 };
 
 // parallel version quick-sort with futures
-template <typename T>
+template<typename T>
 list<T> parallel_quick_sort(list<T> input) {
   if (input.empty()) {
     return input;
@@ -57,25 +57,41 @@ list<T> parallel_quick_sort(list<T> input) {
   return result;
 };
 
-template <typename T>
+template<typename T>
 T func(T a) {
   return a;
 }
 
 // experiment
-template <typename F, typename A>
+template<typename F, typename A>
 typename std::result_of<F(A &&)>::type result(F &&f, A &&a) {
   return f(std::forward<A>(a));
 };
 
 // spawn-task: what is the difference between std::move and std::forward?
-// std::forward
-template <typename F, typename A>
-std::future<typename std::result_of<F(A &&)>::type> spawn_task(F &&f, A &&a) {
-  typedef typename std::result_of<F(A &&)>::type result_type;
-  std::packaged_task<result_type(A &&)> task(std::forward<F>(f));
+// highlight:
+// std::forward is for perfect forwarding, std::move just allow you treat
+// a object as a temporary(an rvalue).
+//
+// ref: https://stackoverflow.com/questions/9671749/whats-the-difference-between-stdmove-and-stdforward
+//
+// std::move takes an object and allows you to treat it as a temporary (an rvalue).
+// Although it isn't a semantic requirement, typically a function accepting a reference
+// to an rvalue will invalidate it.
+// When you see std::move, it indicates that the value of the object should not be used
+// afterwards, but you can still assign a new value and continue using it.
+//
+// std::forward has a single use case: to cast a templated function parameter (inside the
+// function) to the value category (lvalue or rvalue) the caller used to pass it. This
+// allows rvalue arguments to be passed on as rvalues, and lvalues to be passed on as
+// lvalues, a scheme called "perfect forwarding."
+//
+template<typename F, typename... A>
+std::future<typename std::result_of<F(A &&...)>::type> spawn_task(F &&f, A &&... a) {
+  typedef typename std::result_of<F(A &&...)>::type result_type;
+  std::packaged_task<result_type(A &&...)> task(std::forward<F>(f));
   std::future<result_type> res(task.get_future());
-  std::thread t(std::move(task), std::forward<A>(a));
+  std::thread t(std::move(task), std::forward<A>(a)...);
   t.detach();
   return res;
 }
