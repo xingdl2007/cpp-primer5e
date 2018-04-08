@@ -25,7 +25,8 @@
 int SetNonBlocking(int fd) {
   int old_option = fcntl(fd, F_GETFL);
   int new_option = old_option | O_NONBLOCK;
-  fcntl(fd, F_SETFL, new_option);
+  int ret = fcntl(fd, F_SETFL, new_option);
+  assert(ret != -1);
   return old_option;
 }
 
@@ -93,18 +94,18 @@ void et(struct epoll_event *event, int number, int epollfd, int listenfd) {
         long int ret = recv(sockfd, buf, sizeof(buf) - 1, 0);
         if (ret < 0) {
           if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            printf("et-mode: reader later");
+            printf("et-mode[%d]: reader later\n\n", sockfd);
             break;
           }
         } else if (ret == 0) {
           close(sockfd);
           continue;
         } else {
-          printf("et-mode: got %ld bytes of content: %s\n", ret, buf);
+          printf("et-mode[%d]: got %ld bytes of content: %s\n", sockfd, ret, buf);
         }
       }
     } else {
-      printf("et-mode: something else happened\n");
+      printf("et-mode[%d]: something else happened\n", sockfd);
     }
   }
 }
@@ -125,8 +126,12 @@ int main(int argc, char *argv[]) {
   inet_aton(ip, &address.sin_addr);
   address.sin_port = htons(port);
 
-  int listenfd = socket(PF_INET, SOCK_STREAM, 0);
+  int listenfd = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
   assert(listenfd >= 0);
+
+  int reuse = 1;
+  ret = setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+  assert(ret != -1);
 
   ret = bind(listenfd, (struct sockaddr *) &address, sizeof(address));
   assert(ret != -1);
