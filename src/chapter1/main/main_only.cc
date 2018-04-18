@@ -27,6 +27,23 @@
  * 	Fax: (201) 236-3290
 */
 
+#include <iostream>
+
+struct Tail {
+  void operator()() {
+    std::cout << "In Tail's operator()...\n";
+  }
+  ~Tail() { std::cout << "Tail...\n"; }
+};
+
+struct Header {
+  Tail tail() {
+    return Tail();
+  }
+  ~Header() { std::cout << "Header...\n"; }
+};
+
 int main() {
-    return -1;
+  Header().tail()();
+  return -1;
 }

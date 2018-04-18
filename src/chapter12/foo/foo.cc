@@ -44,7 +44,7 @@ using std::make_shared; using std::shared_ptr;
 using std::istream; using std::ostream;
 using std::cin; using std::cout; using std::endl;
 
-#include "Foo.h"
+#include "foo.h"
 
 // factory returns a shared_ptr to a dynamically allocated object
 shared_ptr<Foo> factory(T arg) {

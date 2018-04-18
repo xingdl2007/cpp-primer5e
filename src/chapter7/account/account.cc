@@ -31,7 +31,7 @@
 
 using std::string;
 
-#include "Account.h"
+#include "account.h"
 
 // define static data and function members
 const string Account::accountType("Savings Account");

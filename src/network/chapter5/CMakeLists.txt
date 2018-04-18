@@ -1,0 +1,8 @@
+PROJECT(network_chap5 C)
+add_subdirectory(byteorder)
+add_subdirectory(backlog)
+add_subdirectory(accept)
+add_subdirectory(oob-snd)
+add_subdirectory(oob-rsv)
+add_subdirectory(buffer-rsv)
+add_subdirectory(buffer-snd)

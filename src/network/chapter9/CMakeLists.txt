@@ -1,0 +1,7 @@
+project(network_chap9 C)
+add_subdirectory(select)
+add_subdirectory(echo)
+add_subdirectory(epoll)
+add_subdirectory(oneshot)
+add_subdirectory(chat-client)
+add_subdirectory(chat-server)

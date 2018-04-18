@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <stack>
+#include <thread>
 #include <iostream>
 
 template <typename T>
