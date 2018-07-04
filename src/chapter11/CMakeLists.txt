@@ -1,4 +1,5 @@
 project(CHAPTER11 CXX)
+find_package(Threads REQUIRED)
 
 add_subdirectory(word)
 add_subdirectory(filter)
