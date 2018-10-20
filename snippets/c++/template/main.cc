@@ -57,6 +57,7 @@ int prvalue();
 //  return b < a ? a : b;
 //}
 
+// call-by-reference
 template <typename T>
 T const& max(T const& a, T const& b) {
   std::cout << "template 1" << std::endl;
@@ -64,6 +65,7 @@ T const& max(T const& a, T const& b) {
 }
 
 // can't understand why the warnning
+// call-by-value
 char const* max(char const* a, char const* b) {
   std::cout << "template 2" << std::endl;
   printf("a: %p\n", a);
@@ -71,10 +73,11 @@ char const* max(char const* a, char const* b) {
   return std::strcmp(b, a) < 0 ? a : b;
 }
 
+// call-by-reference: return a reference
 template <typename T>
 T const& max(T const& a, T const& b, T const& c) {
   std::cout << "template 3" << std::endl;
-  return max(a, b);
+  return max(max(a, b), c);
 }
 
 // output: void g(double);
@@ -104,16 +107,28 @@ int main() {
 
   static_assert(sizeof(int) < 10, "int too small");
 
+  // m1 is int type, is a local variable, the the temporaries
+  // (7, 42, 68) are created for the arguments, but those temporaries
+  // are created in main() where they persist until the statement
+  // is done.
   auto m1 = ::max(7, 42, 68);
+  printf("m1: %p\n", &m1);
   std::cout << m1 << std::endl;
 
   char const* s1 = "frederic";
   char const* s2 = "anica";
   char const* s3 = "lucas";
-  auto m2 = ::max(s1, s2, s3);  // TODO: there is a problem
 
-  printf("%p\n", s1);
-  printf("%p\n", s2);
-  printf("%p\n", s3);
-  printf("%p\n", m2);
+  // there is a problem, m2 is a reference to a local variable
+  // created by max(const char*, const char*), should use -O3 to
+  // see the effect
+  // m2 is a referece to a 'const char *'
+  // this problem is very subtle
+  auto m2 = ::max(s1, s2, s3);
+  printf("m2: %p\n", m2);
+  std::cout << m2 << std::endl;  // garbage
+
+  printf("s1: %p\n", s1);
+  printf("s2: %p\n", s2);
+  printf("s3: %p\n", s3);
 }
