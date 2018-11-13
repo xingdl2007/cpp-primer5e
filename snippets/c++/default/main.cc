@@ -1,20 +1,32 @@
 #include <iostream>
 
-class Base {
+// virtual function default value is tricky and may not be what you want
+// so be careful
+class Base
+{
 public:
-  virtual void somefunction(int a, int b, int c = 0) {
+  virtual void somefunction(int a, int b, int c = -10)
+  {
     std::cout << "a: " << a << " b: " << b << " c: " << c << std::endl;
   }
 };
 
-class Derived : public Base {
+class Derived : public Base
+{
 public:
-  virtual void somefunction(int a, int b, int c = 0) override {
+  virtual void somefunction(int a, int b, int c = 10) override
+  {
     std::cout << "a: " << a << " b: " << b << " c: " << c << std::endl;
   }
 };
 
-int main() {
+// output
+// a: 1 b: 2 c: 3
+// a: 4 b: 5 c: -10
+// a: 1 b: 2 c: 3
+// a: 4 b: 5 c: 10
+int main()
+{
   Base b;
   b.somefunction(1, 2, 3);
   b.somefunction(4, 5);

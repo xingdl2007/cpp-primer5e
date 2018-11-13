@@ -7,8 +7,10 @@
 #include "pool.h"
 
 // think: is this usage pattern good?
-int main(int argc, char* argv[]) {
-  if (argc != 3) {
+int main(int argc, char *argv[])
+{
+  if (argc != 3)
+  {
     std::cout << "usage: pool counter size" << std::endl;
     return 1;
   }
@@ -32,10 +34,12 @@ int main(int argc, char* argv[]) {
   {
     std::chrono::steady_clock::time_point start =
         std::chrono::steady_clock::now();
-    for (int i = 0; i < counter; ++i) {
+    for (int i = 0; i < counter; ++i)
+    {
       auto ptr = new std::vector<int>;
       ptr->reserve(2000000);
-      for (int i = 0; i < size; ++i) {
+      for (int i = 0; i < size; ++i)
+      {
         ptr->push_back(i);
       }
       delete ptr;
@@ -50,7 +54,8 @@ int main(int argc, char* argv[]) {
 
   {
     SmartObjectPool<std::vector<int>> vec_pool;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 10; ++i)
+    {
       auto ptr = new std::vector<int>();
       ptr->reserve(2000000);
       vec_pool.add(std::unique_ptr<std::vector<int>>(ptr));
@@ -58,9 +63,11 @@ int main(int argc, char* argv[]) {
 
     std::chrono::steady_clock::time_point start =
         std::chrono::steady_clock::now();
-    for (int i = 0; i < counter; ++i) {
+    for (int i = 0; i < counter; ++i)
+    {
       auto vec = vec_pool.acquire();
-      for (int i = 0; i < size; ++i) {
+      for (int i = 0; i < size; ++i)
+      {
         vec->push_back(i);
       }
       vec->clear();
