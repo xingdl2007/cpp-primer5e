@@ -75,6 +75,9 @@ int main()
     age_node.push_back(std::make_pair("", node));
   }
   root.add_child("age", age_node);
+
+  boost::property_tree::ptree empty;
+  root.add_child("empty", empty);
   boost::property_tree::write_json("root.json", root);
 
   // single: illformated ptree, so can't write to json file

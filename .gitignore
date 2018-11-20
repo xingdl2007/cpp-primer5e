@@ -5,3 +5,4 @@ cmake-build-debug/
 *~
 *.swp
 *.beam
+.vscode
