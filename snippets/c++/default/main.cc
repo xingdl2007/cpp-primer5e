@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 // virtual function default value is tricky and may not be what you want
 // so be careful
@@ -34,5 +35,9 @@ int main()
   Derived d;
   d.somefunction(1, 2, 3);
   d.somefunction(4, 5);
+
+  std::shared_ptr<int> a(new int(100));
+  std::cout << *a << std::endl;
+  std::cout << sizeof(a) << std::endl;
   return 0;
 }

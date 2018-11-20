@@ -1,0 +1,17 @@
+{
+    "edges": [
+        {
+            "from": "Beijing",
+            "to": "Shenzhen"
+        },
+        {
+            "from": "Hello",
+            "to": "World"
+        },
+        {
+            "from": "World",
+            "to": "Beijing"
+        }
+    ],
+    "counter": "120"
+}
