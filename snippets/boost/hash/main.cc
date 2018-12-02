@@ -5,12 +5,15 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <utility>
+#include <boost/shared_array.hpp>
 
 typedef std::pair<uint32_t, uint32_t> Track;
 
 // hash_combine and hash_value, which is not necessary if you use boost
-struct TrackHash {
-  std::size_t operator()(const Track &t) const {
+struct TrackHash
+{
+  std::size_t operator()(const Track &t) const
+  {
     std::size_t seed = 0;
     boost::hash_combine(seed, boost::hash_value(t.first));
     boost::hash_combine(seed, boost::hash_value(t.second));
@@ -18,7 +21,8 @@ struct TrackHash {
   }
 };
 
-int main() {
+int main()
+{
   std::set<Track> pset;
 
   pset.insert({1, 2});
@@ -32,6 +36,8 @@ int main() {
   for (const auto &p : illegal)
     std::cout << p.second << std::endl;
 
-
   // set as hash key
+
+  boost::shared_array<char> data;
+  std::cout << "boost::shared_array<char>: " << sizeof(data) << std::endl;
 }
