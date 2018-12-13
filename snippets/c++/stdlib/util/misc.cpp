@@ -5,7 +5,7 @@
 #include <string_view>
 #include <map>
 #include <unordered_map>
-#include <chrono>
+#include <ctime>
 
 // very useful
 template <typename Rep, typename Period>
@@ -19,6 +19,7 @@ std::ostream &operator<<(std::ostream &out, const std::chrono::duration<Rep, Per
 int main()
 {
     auto system_start = std::chrono::system_clock::now();
+    std::cout << std::clock() << std::endl;
     {
         // very interesting clock/time: duration is a multiply of tick and ratio<> (period)
         std::chrono::duration<int> twentySeconds(20);
@@ -124,5 +125,10 @@ int main()
         {
             std::cout << "system start less than 1 us" << std::endl;
         }
+    }
+
+    {
+        std::cout << CLOCKS_PER_SEC << std::endl;
+        std::cout << std::clock() << std::endl;
     }
 }
