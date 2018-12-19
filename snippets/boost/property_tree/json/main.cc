@@ -4,6 +4,8 @@
 #include <set>
 #include <vector>
 
+using namespace std;
+
 void generate()
 {
   boost::property_tree::ptree tree;
@@ -87,4 +89,17 @@ int main()
 
   // generate from source data
   generate();
+
+  // interesting tree structure, key and value separately stored
+  {
+    cout << endl;
+    namespace pt = boost::property_tree;
+    pt::ptree tree;
+    tree.push_back(pt::ptree::value_type("pi", pt::ptree("3.1415926")));
+    tree.data() = "Goooooogle";
+    cout << tree.data() << endl;
+    auto it = tree.find("pi");
+    cout << it->first << endl;
+    cout << it->second.data() << endl;
+  }
 }
