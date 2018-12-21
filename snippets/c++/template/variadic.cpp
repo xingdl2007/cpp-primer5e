@@ -1,6 +1,7 @@
 #include <iostream>
 #include <bitset>
 #include <future>
+#include <functional>
 
 // no parameter
 void print()
@@ -29,6 +30,19 @@ void foo()
     std::cout << t << std::endl;
 }
 
+void func(int x, int y)
+{
+}
+
+auto l = [](int x, int y) {};
+
+class C
+{
+  public:
+    void operator()(int x, int y) const {}
+    void memfunc(int x, int y) const {}
+};
+
 int main()
 {
     print(7.5, "hello", std::bitset<16>(377), 42);
@@ -38,5 +52,20 @@ int main()
     foo<int>();
     foo<float>();
 
-    
+    C c;
+    std::shared_ptr<C> sp(new C);
+
+    std::bind(func, 77, 33)();
+    std::bind(l, 77, 33)();
+    std::bind(C(), 77, 33)();
+    std::bind(&C::memfunc, c, 77, 33)();  // c.memfunc()
+    std::bind(&C::memfunc, &c, 77, 33)(); // &c->memfunc()
+    std::bind(&C::memfunc, sp, 77, 33)(); // sp->memfunc
+
+    std::async(func, 52, 77);
+    std::async(l, 42, 77);
+    std::async(c, 42, 77);
+    std::async(&C::memfunc, c, 42, 77);  // c.memfunc()
+    std::async(&C::memfunc, &c, 42, 77); // &c->memfunc()
+    std::async(&C::memfunc, sp, 42, 77); // sp->memfunc
 }
