@@ -48,4 +48,8 @@ int main()
         std::cout << "modifying it changed it to " << str.operator->()->get() << '\n';
         std::cout << "modifying it changed it to " << (*str).get() << '\n';
     }
+
+    {
+        std::optional<std::string> option = {};
+    }
 }

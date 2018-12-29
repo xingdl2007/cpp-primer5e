@@ -4,6 +4,7 @@
 #include <stack>
 #include <string>
 #include <chrono>
+#include <map>
 
 #define BINARY_OP(op) #op
 #define CONCAT(a, b) a##b
