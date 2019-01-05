@@ -1,3 +1,4 @@
+#include <functional>
 #include <string>
 #include <functional>
 #include <iostream>
@@ -51,5 +52,6 @@ int main()
 
     {
         std::optional<std::string> option = {};
+        std::function<void(int, int)> f;
     }
 }
