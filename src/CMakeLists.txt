@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.9.6)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
+# pthread and prefer -pthread flag
+find_package(Threads REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 # set variables
 set(CMAKE_CXX_FLAGS -Wall)
 
@@ -28,3 +32,4 @@ add_subdirectory(chapter19)
 add_subdirectory(concurrency)
 add_subdirectory(network)
 add_subdirectory(verify)
+add_subdirectory(experiment)
