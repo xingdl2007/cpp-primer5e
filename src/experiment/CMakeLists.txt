@@ -34,6 +34,8 @@ awesomedb_test("consume.cc" "Threads::Threads")
 awesomedb_test("release_sequence.cc" "Threads::Threads")
 awesomedb_test("fences.cc" "Threads::Threads")
 awesomedb_test("file.cc" "")
+awesomedb_test("clock.cc" "")
+awesomedb_test("timetest.cc" "")
 
 # multicast example
 add_executable(mcastclient mcastclient.c)
