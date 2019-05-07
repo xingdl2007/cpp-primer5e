@@ -2,8 +2,8 @@
 
 extern "C"
 {
-    void hello()
+    void hello(int time)
     {
-        std::printf("hello world\n");
+        std::printf("hello world: %d\n", time);
     }
 }
