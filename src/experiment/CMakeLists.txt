@@ -36,7 +36,10 @@ awesomedb_test("fences.cc" "Threads::Threads")
 awesomedb_test("file.cc" "")
 awesomedb_test("clock.cc" "")
 awesomedb_test("timetest.cc" "")
+awesomedb_test("plugin.cc" ${CMAKE_DL_LIBS})
 
 # multicast example
 add_executable(mcastclient mcastclient.c)
 add_executable(mcastserver mcastserver.c)
+
+add_library(plugin_hello "plugin_hello.cc")

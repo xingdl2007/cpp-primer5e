@@ -10,6 +10,8 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 # set variables
 set(CMAKE_CXX_FLAGS -Wall)
 
+enable_testing()
+
 add_subdirectory(chapter1)
 add_subdirectory(chapter2)
 add_subdirectory(chapter3)
