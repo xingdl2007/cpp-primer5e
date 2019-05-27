@@ -38,6 +38,8 @@ awesomedb_test("clock.cc" "")
 awesomedb_test("timetest.cc" "")
 awesomedb_test("plugin.cc" ${CMAKE_DL_LIBS})
 awesomedb_test("asm.cc" "")
+awesomedb_test("timing_clock.cc" "")
+awesomedb_test("smart_ptr.cc" "Threads::Threads")
 
 # multicast example
 add_executable(mcastclient mcastclient.c)
