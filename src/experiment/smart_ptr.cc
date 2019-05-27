@@ -3,6 +3,7 @@
 #include <iostream>
 #include <functional>
 #include <vector>
+#include <type_traits>
 
 void func(std::unique_ptr<int> &ptr)
 {
@@ -25,7 +26,7 @@ void do_sth(int data)
     std::cout << "data: " << data << std::endl;
 }
 
-// Note: f is Fn type
+// Note: f is Fn type, copy
 template <typename Fn, typename... Args>
 static void Worker(Fn f, Args &&... args)
 {
@@ -36,15 +37,23 @@ static void Worker(Fn f, Args &&... args)
 template <typename Fn, typename... Args>
 void Wrapper(Fn &&f, Args &&... args)
 {
-    std::thread t(Worker<Fn, Args...>, std::forward<Fn>(f), std::forward<Args>(args)...);
-    t.join();
+    std::thread t(Worker<std::remove_reference_t<Fn>,
+                         std::remove_reference_t<Args>...>,
+                  std::forward<Fn>(f), std::forward<Args>(args)...);
+    if (t.joinable())
+    {
+        t.join();
+    }
 }
 
 int main(int argc, char *argv[])
 {
     {
-        Wrapper<decltype(do_sth), int>(do_sth, 2);
+        // why must Wrapper<decltype(do_sth), int>(do_sth, 2);
+        // Wrapper(do_sth, 2); fail compile
+        Wrapper(do_sth, 2);
     }
+
     {
         std::unique_ptr<int> ptr = std::make_unique<int>(1);
         std::unique_ptr<int> ptr2 = std::make_unique<int>(1);
