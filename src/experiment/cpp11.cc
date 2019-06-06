@@ -6,6 +6,21 @@
 #include <iostream>
 #include <utility>
 #include <tuple>
+#include <type_traits>
+
+namespace test
+{
+struct true_type
+{
+    static bool value;
+};
+bool true_type::value = true;
+
+} // namespace test
+
+class Test : public test::true_type
+{
+};
 
 struct Foo
 {
@@ -32,5 +47,11 @@ int main()
         printf("%p\n", array);
         printf("%p\n", &array[0]);
         printf("%p\n", &array);
+    }
+
+    {
+        test::true_type::value = false;
+        std::cout << Test::value << std::endl;
+        std::cout << test::true_type::value << std::endl;
     }
 }

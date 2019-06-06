@@ -44,5 +44,7 @@ awesomedb_test("smart_ptr.cc" "Threads::Threads")
 # multicast example
 add_executable(mcastclient mcastclient.c)
 add_executable(mcastserver mcastserver.c)
+add_executable(timestamp_client timestamp_client.cc)
+add_executable(timestamp_server timestamp_server.cc)
 
 add_library(plugin_hello "plugin_hello.cc")
