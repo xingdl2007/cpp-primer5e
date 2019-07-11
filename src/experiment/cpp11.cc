@@ -34,6 +34,25 @@ struct Foo
     }
 };
 
+struct X
+{
+    X &ref() { return *this; }
+};
+
+X getx() { return X(); }
+
+void g(X &x) {}
+
+int f()
+{
+    //const X &x = getx(); // OK
+    //X &x = getx();       // error
+    //X &x = getx().ref(); // OK
+    //g(getx());           //error
+    //g(getx().ref()); //OK
+    return 0;
+}
+
 int main()
 {
     std::cout << sizeof(std::piecewise_construct) << std::endl;

@@ -35,17 +35,17 @@ int main(int argc, char *argv[])
     groupSock.sin_port = htons(4321);
 
     /* Disable loopback so you do not receive your own datagrams.*/
-    // {
-    //     char loopch = 0;
-    //     if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopch, sizeof(loopch)) < 0)
-    //     {
-    //         perror("Setting IP_MULTICAST_LOOP error");
-    //         close(sd);
-    //         exit(1);
-    //     }
-    //     else
-    //         printf("Disabling the loopback...OK.\n");
-    // }
+    {
+        char loopch = 0;
+        if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loopch, sizeof(loopch)) < 0)
+        {
+            perror("Setting IP_MULTICAST_LOOP error");
+            close(sd);
+            exit(1);
+        }
+        else
+            printf("Disabling the loopback...OK.\n");
+    }
 
     /* Set local interface for outbound multicast datagrams. */
     /* The IP address specified must be associated with a local, */
@@ -59,6 +59,26 @@ int main(int argc, char *argv[])
     else
     {
         printf("Setting the local interface...OK\n");
+    }
+
+    // Why bind?
+    uint32_t reuse = 1;
+    setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(uint32_t));
+
+    struct sockaddr_in localSock;
+    memset((char *)&localSock, 0, sizeof(localSock));
+    localSock.sin_family = AF_INET;
+    localSock.sin_port = htons(4321);       // receive port
+    localSock.sin_addr.s_addr = INADDR_ANY; // any address's package is ok, like filter rule
+    if (bind(sd, (struct sockaddr *)&localSock, sizeof(localSock)))
+    {
+        perror("Binding datagram socket error");
+        close(sd);
+        exit(1);
+    }
+    else
+    {
+        printf("Binding datagram socket...OK.\n");
     }
 
     /* Send a message to the multicast group specified by the groupSock sockaddr structure. */

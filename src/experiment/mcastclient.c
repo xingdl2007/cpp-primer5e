@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     memset((char *)&localSock, 0, sizeof(localSock));
     localSock.sin_family = AF_INET;
     localSock.sin_port = htons(4321);       // receive port
-    localSock.sin_addr.s_addr = INADDR_ANY; // any address's package is ok, like filter rule
+    localSock.sin_addr.s_addr = INADDR_ANY; //inet_addr("226.1.1.1"); // INADDR_ANY; // any address's package is ok, like filter rule
     if (bind(sd, (struct sockaddr *)&localSock, sizeof(localSock)))
     {
         perror("Binding datagram socket error");
